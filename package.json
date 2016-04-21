@@ -1,0 +1,38 @@
+{
+  "name": "leaflet-routing-gpx",
+  "version": "1.0.0",
+  "description": "Transformation of a leaflet-routing-machine route to a GPX description",
+  "main": "src/L.Routing.Gpx.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "leaflet": "^0.7.7",
+	"leaflet-routing-machine": "^2.6.2"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "browserify": "^13.0.0",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-jshint": "^0.12.0",
+    "grunt-contrib-uglify": "^0.11.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wwwouaiebe/leaflet-routing-gpx.git"
+  },
+  "keywords": [
+    "Leaflet",
+    "Routing",
+    "Gpx"
+  ],
+  "author": "Christian Guyette (wwwouaiebe)",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/wwwouaiebe/leaflet-routing-gpx/issues"
+  },
+  "homepage": "https://github.com/wwwouaiebe/leaflet-routing-gpx#readme"
+}
