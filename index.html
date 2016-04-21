@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="ROBOTS" content="NOINDEX, NOFOLLOW" />
+		<title>leaflet-routing-gpx by wwwouaiebe</title>
+		<meta name="author" content="Christian Guyette" />
+		<link rel="stylesheet" href="leaflet.css" />
+		<link rel="stylesheet" href="leaflet-routing-machine.css" />
+		<link rel="stylesheet" href="index.css" media="screen"/>
+	</head>
+	<body>
+		<header>
+			<nav id="Menu">
+				<div id="Help" class="MenuItem">
+					<a>Help</a>
+					<div>
+						<h3>Leaflet-Routing-Gpx</h3>
+						<p>
+							Modify the route displayed by Leaflet-Routing-Machine on the map: select the alternate route in blue, drag and drop a waypoint or add a new waypoint by draging the route.
+							Each time the route is modified by Leaflet-Routing-Machine, the GPX data on the right are also modified.
+						</p>
+						<p>
+							Click on the button "GPX file" on the left to download the data as GPX file ( work only on modern browsers like Firefox... if you will dowload GPX data for old browsers, you have probably to implement a server side solution...)
+						</p>
+					</div>
+				</div>
+				<div id="GpxFile" class="MenuItem">
+					<a download="leaflet-routing-gpx.gpx" id="downloadGpx" >GPX file</a>
+				</div>
+				<div id="View" class="MenuItem">
+					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx">View On GitHub</a>
+				</div>
+				<div id="Download" class="MenuItem">
+					Download:
+				</div>
+				<div class="MenuItem">
+					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx/zipball/master">ZIP</a>
+				</div>
+				<div class="MenuItem">
+					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx/tarball/master">TAR</a>
+				</div>
+			</nav>
+		</header>
+		<div id="Map">
+		</div>
+		<div id="Gpx">
+			<textarea id="GpxString" >
+			Gpx file not found
+			</textarea>
+		</div>
+		<script src="leaflet.js"></script>
+		<script src="leaflet-routing-machine.min.js"></script>
+		<script src="L.Routing.Gpx.min.js"></script>
+		<script>
+			(function( ) 
+			{
+				'use strict';
+
+				var Map = L.map ( 'Map' ).setView( [ 50.49680, 5.51116 ], 13 );
+				L.tileLayer ( 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" title="Contributeurs de OpenStreetMap">Contributeurs de OpenStreetMap</a> | &copy; <a href="http://www.ouaie.be/" title="http://www.ouaie.be/">Christian Guyette</a>' } ).addTo ( Map );
+
+				var Routing = L.Routing.gpx( {
+					waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ],
+					showAlternatives: true,
+					waypointMode : 'snap',
+					fitSelectedRoutes : false,
+					collapsible : true,
+					altLineOptions : 
+						{
+							styles : [{color: 'black', opacity: 0.15, weight: 9}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'blue', opacity: 1, weight: 2}],
+							addWaypoints : true ,
+							missingRouteStyles : [{color: 'black', opacity: 0.15, weight: 7},{color: 'white', opacity: 0.6, weight: 4},{color: 'gray', opacity: 0.8, weight: 2, dashArray: '7,12'}]
+						},
+					lineOptions : 
+						{
+							styles : [{color: 'black', opacity: 0.15, weight: 9}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'red', opacity: 1, weight: 4}],
+							addWaypoints : true ,
+							missingRouteStyles : [{color: 'black', opacity: 0.15, weight: 7},{color: 'white', opacity: 0.6, weight: 4},{color: 'gray', opacity: 0.8, weight: 2, dashArray: '7,12'}]
+						},
+					dragStyles : [{color: 'black', opacity: 0.15, weight: 7}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'green', opacity: 1, weight: 2, dashArray: '7,12'}],
+				} ).addTo( Map );
+				L.Routing.errorControl( Routing ).addTo( Map );
+
+				var GpxFile = null;
+				var makeGpxFile = function ( GpxString ) {
+					var GpxData = new File ( [ '<?xml version="1.0"?>', GpxString ], { type: 'application/xml' } );
+					if ( GpxFile !== null ) {
+						window.URL.revokeObjectURL ( GpxFile );
+					}
+					GpxFile = window.URL.createObjectURL ( GpxData );
+					return GpxFile;
+				};
+				
+				Routing.on ( 
+					'gpxchanged',
+					function ( ) {
+						document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( );
+						var LinkElement = document.getElementById('downloadGpx');
+						LinkElement.href = makeGpxFile ( Routing.getGpxString ( ) );
+					}
+				);				
+
+				}
+			());		
+		</script>
+	</body>
+</html>
