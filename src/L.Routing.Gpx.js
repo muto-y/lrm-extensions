@@ -34,7 +34,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		},
 		getGpxDocument : function ( ) {
 			var TimeStamp = new Date ( ).toISOString ( );
-			var GpxDocument = document.implementation.createDocument ( "", "" );
+			var GpxDocument;
+			try {
+				GpxDocument = document.implementation.createDocument ( "", "", null );
+			}
+			catch ( Error ) {
+				var GpxDocumentType =  document.implementation.createDocumentType('gpx', '', '');
+				GpxDocument = document.implementation.createDocument ( "", "", GpxDocumentType );
+			}
 			
 			var GpxElement = GpxDocument.createElement ( "gpx" );
 			
