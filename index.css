@@ -94,3 +94,7 @@ html > body > div#Gpx
 	width : 90%;
 	height : 90%;
 }
+#GpxError
+{
+	color : red;
+}

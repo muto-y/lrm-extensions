@@ -21,7 +21,7 @@
 							Modify the route displayed by Leaflet-Routing-Machine on the map: select the alternate route in blue, drag and drop a waypoint or add a new waypoint by draging the route.
 							Each time the route is modified by Leaflet-Routing-Machine, the GPX data on the right are also modified.
 						</p>
-						<p>
+						<p id="HelpGpxFile">
 							Click on the button "GPX file" on the left to download the data as GPX file ( work only on modern browsers like Firefox... if you will dowload GPX data for old browsers, you have probably to implement a server side solution...)
 						</p>
 					</div>
@@ -49,6 +49,7 @@
 			<textarea id="GpxString" >
 			Gpx file not found
 			</textarea>
+			<p id="GpxError"></p>
 		</div>
 		<script src="leaflet.js"></script>
 		<script src="leaflet-routing-machine.min.js"></script>
@@ -84,21 +85,31 @@
 				L.Routing.errorControl( Routing ).addTo( Map );
 
 				var GpxFile = null;
-				var makeGpxFile = function ( GpxString ) {
-					var GpxData = new File ( [ '<?xml version="1.0"?>', GpxString ], { type: 'application/xml' } );
-					if ( GpxFile !== null ) {
-						window.URL.revokeObjectURL ( GpxFile );
-					}
-					GpxFile = window.URL.createObjectURL ( GpxData );
-					return GpxFile;
-				};
-				
+
 				Routing.on ( 
 					'gpxchanged',
 					function ( ) {
 						document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( );
-						var LinkElement = document.getElementById('downloadGpx');
-						LinkElement.href = makeGpxFile ( Routing.getGpxString ( ) );
+						try {
+							var GpxData = new File ( [ '<?xml version="1.0"?>', Routing.getGpxString ( ) ], { type: 'application/xml' } );
+							if ( GpxFile !== null ) {
+								window.URL.revokeObjectURL ( GpxFile );
+							}
+							GpxFile = window.URL.createObjectURL ( GpxData );
+						}
+						catch ( Error ) {
+							if ( document.getElementById('GpxError') ) {
+								document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
+							}
+						}
+						
+						if ( GpxFile ) {
+							document.getElementById('downloadGpx').href = GpxFile;
+						}
+						else {
+							document.getElementById( 'HelpGpxFile' ).style.visibility = 'hidden';
+							document.getElementById( 'GpxFile' ).style.visibility = 'hidden';
+						}
 					}
 				);				
 
