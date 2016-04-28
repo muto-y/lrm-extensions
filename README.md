@@ -48,21 +48,15 @@ Chrome or Opera.
 
 ### Additionnal options
 
-|-------------------|---------|---------------|---------------------------------------------------|
 | Option            | Type    | Default value | Description                                       |
-|-------------------|---------|---------------|---------------------------------------------------|
+| ----------------- | ------- | ------------- | ------------------------------------------------- |
 | GpxXmlDeclaration | Boolean | true          | The XML declaration is added to the XML string    |
-|-------------------|---------|---------------|---------------------------------------------------|
 | GpxDate           | Number  | 2             | 0 : date is not added to the XML string           |
 |                   |         |               | 1 : the date is 1970-01-01T00:00:00.000Z          |
 |                   |         |               | 2 : the date is the current date                  |
-|-------------------|---------|---------------|---------------------------------------------------|
 | GpxWaypoints      | Boolean | true          |  Waypoints are added to the XML string            |
-|-------------------|---------|---------------|---------------------------------------------------|
 | GpxRoute          | Boolean | false         |  The route description is added to the XML string |
-|-------------------|---------|---------------|---------------------------------------------------|
 | GpxTrack          | Boolean | true          |  The track is added to the XML string             |
-|-------------------|---------|---------------|---------------------------------------------------|
 
 ### getGpxString ( ) method
 
