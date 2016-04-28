@@ -46,10 +46,19 @@
 		<div id="Map">
 		</div>
 		<div id="Gpx">
+			<form id="options">
+				<input id="GpxXmlDeclaration" type="checkbox" checked="1">options.GpxXmlDeclaration</input><br />
+				<input id="GpxDate0" type="radio" name="GpxDate" value="0">options.GpxDate = 0</input><br />
+				<input id="GpxDate1" type="radio" name="GpxDate" value="1">options.GpxDate = 1 (paranoïds only)</input><br />
+				<input id="GpxDate2" type="radio" name="GpxDate" value="2" checked="1">options.GpxDate = 2</input><br />
+				<input id="GpxWaypoints" type="checkbox" checked="1">options.GpxWaypoints</input><br />
+				<input id="GpxRoute" type="checkbox">options.GpxRoute</input><br />
+				<input id="GpxTrack" type="checkbox" checked="1">options.GpxTrack</input><br />
+			</form>
+			<p id="GpxError">Use the GPX file button on the left to save the file</p>
 			<textarea id="GpxString" >
 			Gpx file not found
 			</textarea>
-			<p id="GpxError"></p>
 		</div>
 		<script src="leaflet.js"></script>
 		<script src="leaflet-routing-machine.min.js"></script>
@@ -58,10 +67,8 @@
 			(function( ) 
 			{
 				'use strict';
-
 				var Map = L.map ( 'Map' ).setView( [ 50.49680, 5.51116 ], 13 );
 				L.tileLayer ( 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" title="Contributeurs de OpenStreetMap">Contributeurs de OpenStreetMap</a> | &copy; <a href="http://www.ouaie.be/" title="http://www.ouaie.be/">Christian Guyette</a>' } ).addTo ( Map );
-
 				var Routing = L.Routing.gpx( {
 					waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ],
 					showAlternatives: true,
@@ -83,38 +90,90 @@
 					dragStyles : [{color: 'black', opacity: 0.15, weight: 7}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'green', opacity: 1, weight: 2, dashArray: '7,12'}],
 				} ).addTo( Map );
 				L.Routing.errorControl( Routing ).addTo( Map );
-
+				document.getElementById ( "GpxXmlDeclaration" ).checked = true;
+				
+				document.getElementById ( "GpxWaypoints" ).checked = true;
+				document.getElementById ( "GpxRoute" ).checked = false;
+				document.getElementById ( "GpxTrack" ).checked = true;
+				document.getElementById ( "GpxDate0" ).checked = false;
+				document.getElementById ( "GpxDate1" ).checked = false;
+				document.getElementById ( "GpxDate2" ).checked = true;
+				
 				var GpxFile = null;
-
-				Routing.on ( 
-					'gpxchanged',
-					function ( ) {
-						document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( );
-						try {
-							var GpxData = new File ( [ '<?xml version="1.0"?>', Routing.getGpxString ( ) ], { type: 'application/xml' } );
-							if ( GpxFile !== null ) {
-								window.URL.revokeObjectURL ( GpxFile );
-							}
-							GpxFile = window.URL.createObjectURL ( GpxData );
+				var UpdateGpx = function ( ) {
+					document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( );
+					try {
+						var GpxData = new File ( [ Routing.getGpxString ( ) ], { type: 'application/xml' } );
+						if ( GpxFile !== null ) {
+							window.URL.revokeObjectURL ( GpxFile );
 						}
-						catch ( Error ) {
-							if ( document.getElementById('GpxError') ) {
-								document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
-							}
-						}
-						
-						if ( GpxFile ) {
-							document.getElementById('downloadGpx').href = GpxFile;
-						}
-						else {
-							document.getElementById( 'HelpGpxFile' ).style.visibility = 'hidden';
-							document.getElementById( 'GpxFile' ).style.visibility = 'hidden';
+						GpxFile = window.URL.createObjectURL ( GpxData );
+					}
+					catch ( Error ) {
+						if ( document.getElementById('GpxError') ) {
+							document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
+							document.getElementById('GpxError').style.color = "red";
 						}
 					}
-				);				
-
+					
+					if ( GpxFile ) {
+						document.getElementById('downloadGpx').href = GpxFile;
+					}
+					else {
+						document.getElementById( 'HelpGpxFile' ).style.visibility = 'hidden';
+						document.getElementById( 'GpxFile' ).style.visibility = 'hidden';
+					}
 				}
-			());		
+				
+				Routing.on ( 
+					'gpxchanged',
+					UpdateGpx
+				);
+				document.getElementById ( "GpxXmlDeclaration" ).addEventListener ( 
+					'change', 
+					function ( event ){ 
+						Routing.options.GpxXmlDeclaration = event.target.checked;
+						UpdateGpx ( );
+					}
+				);
+				var UpdateDate = function ( event ){ 
+					Routing.options.GpxDate = parseInt ( event.target.value );
+					UpdateGpx ( );
+				}
+				document.getElementById ( "GpxDate0" ).addEventListener ( 
+					'change', 
+					UpdateDate
+				);
+				document.getElementById ( "GpxDate1" ).addEventListener ( 
+					'change', 
+					UpdateDate
+				);
+				document.getElementById ( "GpxDate2" ).addEventListener ( 
+					'change', 
+					UpdateDate
+				);
+				document.getElementById ( "GpxWaypoints" ).addEventListener ( 
+					'change', 
+					function ( event ){ 
+						Routing.options.GpxWaypoints = event.target.checked;
+						UpdateGpx ( );
+					}
+				);
+				document.getElementById ( "GpxRoute" ).addEventListener ( 
+					'change', 
+					function ( event ){ 
+						Routing.options.GpxRoute = event.target.checked;
+						UpdateGpx ( );
+					}
+				);
+				document.getElementById ( "GpxTrack" ).addEventListener ( 
+					'change', 
+					function ( event ){ 
+						Routing.options.GpxTrack = event.target.checked;
+						UpdateGpx ( );
+					}
+				);
+			} ());		
 		</script>
 	</body>
 </html>

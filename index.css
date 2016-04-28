@@ -49,7 +49,7 @@ html > body > header > nav > div > div
 	left : 7em;
 	border-width : 0.1em;
 	border-style : solid;
-	width : 50em;
+	width : 30em;
 	background-color : white;
 	color: black;
 	text-align : left;
@@ -81,20 +81,23 @@ html > body > div#Gpx
 {
 	background-color : white;
 	position: absolute;	
-	width: 30%; 
+	width: 28%; 
 	height: 100%; 
-	top: 5%; 
+	top: 0px; 
 	right: 0px; 
 	bottom: 0px; 
-	left: 70%;
-	text-align : center;
+	left: 71%;
+}
+html > body > div#Gpx > form#options
+{
+	padding-top: 1em;
 }
 #GpxString
 {
-	width : 90%;
-	height : 90%;
+	width : 100%;
+	height : calc(100% - 19em);
 }
 #GpxError
 {
-	color : red;
+	color : black;
 }
