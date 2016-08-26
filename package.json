@@ -1,8 +1,8 @@
 {
-  "name": "leaflet-routing-gpx",
+  "name": "lrm-extensions",
   "version": "1.0.0",
-  "description": "Transformation of a leaflet-routing-machine route to a GPX description",
-  "main": "src/L.Routing.Gpx.js",
+  "description": "Extensions for leaflet-routing-machine",
+  "main": "src/L.Routing.Extensions.js",
   "directories": {
     "test": "tests"
   },
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wwwouaiebe/leaflet-routing-gpx.git"
+    "url": "git+https://github.com/wwwouaiebe/lrm-extensions.git"
   },
   "keywords": [
     "Leaflet",
@@ -32,7 +32,7 @@
   "author": "Christian Guyette (wwwouaiebe)",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/wwwouaiebe/leaflet-routing-gpx/issues"
+    "url": "https://github.com/wwwouaiebe/lrm-extensions/issues"
   },
-  "homepage": "https://github.com/wwwouaiebe/leaflet-routing-gpx#readme"
+  "homepage": "https://github.com/wwwouaiebe/lrm-extensions#readme"
 }

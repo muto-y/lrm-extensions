@@ -16,7 +16,7 @@
 				<div id="Help" class="MenuItem">
 					<a>Help</a>
 					<div>
-						<h3>Leaflet-Routing-Gpx</h3>
+						<h3>lrm-extensions</h3>
 						<p>
 							Modify the route displayed by Leaflet-Routing-Machine on the map: select the alternate route in blue, drag and drop a waypoint or add a new waypoint by draging the route.
 							Each time the route is modified by Leaflet-Routing-Machine, the GPX data on the right are also modified.
@@ -30,22 +30,22 @@
 					</div>
 				</div>
 				<div id="GpxFile" class="MenuItem">
-					<a download="leaflet-routing-gpx.gpx" id="downloadGpx" >GPX file</a>
+					<a download="lrm-extensions.gpx" id="downloadGpx" >GPX file</a>
 				</div>
 				<div id="CoordinatesFile" class="MenuItem">
-					<a download="leaflet-routing-gpx.txt" id="downloadCoordinates" >Coordinates file</a>
+					<a download="lrm-extensions.txt" id="downloadCoordinates" >Coordinates file</a>
 				</div>
 				<div id="View" class="MenuItem">
-					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx">View On GitHub</a>
+					<a href="https://github.com/wwwouaiebe/lrm-extensions">View On GitHub</a>
 				</div>
 				<div id="Download" class="MenuItem">
 					Download:
 				</div>
 				<div class="MenuItem">
-					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx/zipball/master">ZIP</a>
+					<a href="https://github.com/wwwouaiebe/lrm-extensions/zipball/master">ZIP</a>
 				</div>
 				<div class="MenuItem">
-					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx/tarball/master">TAR</a>
+					<a href="https://github.com/wwwouaiebe/lrm-extensions/tarball/master">TAR</a>
 				</div>
 			</nav>
 		</header>
@@ -68,14 +68,14 @@
 		</div>
 		<script src="../node_modules/leaflet/dist/leaflet.js"></script>
 		<script src="../node_modules/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
-		<script src="../dist/L.Routing.Gpx.min.js"></script>
+		<script src="../dist/lrm-extensions.min.js"></script>
 		<script>
 			(function( ) 
 			{
 				'use strict';
 				var Map = L.map ( 'Map' ).setView( [ 50.49680, 5.51116 ], 13 );
 				L.tileLayer ( 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" title="Contributeurs de OpenStreetMap">Contributeurs de OpenStreetMap</a> | &copy; <a href="http://www.ouaie.be/" title="http://www.ouaie.be/">Christian Guyette</a>' } ).addTo ( Map );
-				var Routing = L.Routing.gpx( {
+				var Routing = L.Routing.extensions( {
 					waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ],
 					showAlternatives: true,
 					waypointMode : 'snap',

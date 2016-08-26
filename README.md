@@ -1,15 +1,15 @@
-# leaflet-lrm-extensions
+# lrm-extensions
 
 Warning : this plugin is under development. Unstable version!
 
-leaflet-lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can export to a GPS the route created with leaflet-routing-machine.
+lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can export to a GPS the route created with leaflet-routing-machine.
 The plugin work with leaflet-routing-machine and with lrm-mapzen (and perhaps also with others lrm plugin, but not tested... :-( ).
-See the [demo](http://wwwouaiebe.github.io/leaflet-lrm-extensions/) page.
+See the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
 
-On the demo, select the alternate route in blue, add waypoints or drag and drop the start or end waypoint to see the gpx file changes.
+On the demo, add waypoints or drag and drop the start or end waypoint to see the gpx file changes.
 You can also select another option on the top right.
 
-## Loading leaflet-lrm-extensions
+## Loading lrm-extensions
 
 You have first to have Leaflet and Leaflet-Routing-Machine loaded and eventually lrm-mapzen:
 in the header:
@@ -26,27 +26,31 @@ and in the header or the body:
 		<script src="leaflet-routing-machine.min.js"></script>
 ```
 
-After, you have to load leaflet-lrm-extensions:
+After, you have to load lrm-extensions:
 ```HTML
-		<script src="L.Routing.Gpx.min.js"></script>
+		<script src="lrm-extensions.min.js"></script>
 ```
 
 ## What's you have to do in the javascript?
 
-You have to replace the call to the L.Routing.control factory method by a call to the L.Routing.gpx factory method:
+You have to replace the call to the L.Routing.control factory method by a call to the L.Routing.extensions factory method:
 
 ```JavaScript
-var Routing = L.Routing.gpx( { 	waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ] /*,and eventually others lrm options */	} ).addTo( Map );
+var Routing = L.Routing.extensions ( { 	waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ] /*,and eventually others lrm options */	} ).addTo( Map );
 ```
 
-All the options of the L.Routing.control method remains valid, of course. Additionally, you can add some options for the L.Routing.gpx method.
+All the options of the L.Routing.control method remains valid, of course. 
 You have also to implement something for finally saving the GPX file. Due to the fact that currently, there isn't a common way for all browsers to save 
-a file on the local drive, this part is not implemented in leaflet-lrm-extensions, but you can have a look on the demo file to understand how it's made for Firefox, 
+a file on the local drive, this part is not implemented in lrm-extensions, but you can have a look on the demo file to understand how it's made for Firefox, 
 Chrome or Opera.
 
-## leaflet-lrm-extensions documentation
+## lrm-extensions documentation
 
-### Additionnal options
+### getGpxString ( options ) method
+
+This method get the GPX string corresponding to the current route found with leaflet-routing-machine
+
+Possible values for options:
 
 | Option            | Type    | Default value | Description                                       |
 | ----------------- | ------- | ------------- | ------------------------------------------------- |
@@ -57,10 +61,6 @@ Chrome or Opera.
 | GpxWaypoints      | Boolean | true          |  Waypoints are added to the XML string            |
 | GpxRoute          | Boolean | false         |  The route description is added to the XML string |
 | GpxTrack          | Boolean | true          |  The track is added to the XML string             |
-
-### getGpxString ( ) method
-
-This method get the GPX string corresponding to the current route found with leaflet-routing-machine
 
 ### gpxchanged event
 

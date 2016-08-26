@@ -1,4 +1,3 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
 Copyright - 2015 2016 - Christian Guyette - Contact: http//www.ouaie.be/
 This  program is free software;
@@ -17,7 +16,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 (function() {
 	'use strict';
 
-	L.Routing.Gpx = L.Routing.Control.extend ( {
+	L.Routing.Extensions = L.Routing.Control.extend ( {
 		_GpxRoute : null,
 		initialize: function ( options ) {
 			L.Util.setOptions ( this, options );
@@ -310,12 +309,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	}
 	});
 	
-	L.Routing.gpx = function ( options ) {
-		return new L.Routing.Gpx ( options );
+	L.Routing.extensions = function ( options ) {
+		return new L.Routing.Extensions ( options );
 	};
 
 	if ( typeof module !== 'undefined' && module.exports ) {
-		module.exports = L.Routing.gpx;
+		module.exports = L.Routing.extensions;
 	}
 } ) ( );
-},{}]},{},[1]);
