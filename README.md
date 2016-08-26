@@ -1,15 +1,15 @@
-# leaflet-routing-gpx
+# leaflet-lrm-extensions
 
 Warning : this plugin is under development. Unstable version!
 
-leaflet-routing-gpx is a plugin for leaflet-routing-machine. With this plugin, you can export to a GPS the route created with leaflet-routing-machine.
+leaflet-lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can export to a GPS the route created with leaflet-routing-machine.
 The plugin work with leaflet-routing-machine and with lrm-mapzen (and perhaps also with others lrm plugin, but not tested... :-( ).
-See the [demo](http://wwwouaiebe.github.io/leaflet-routing-gpx/) page.
+See the [demo](http://wwwouaiebe.github.io/leaflet-lrm-extensions/) page.
 
 On the demo, select the alternate route in blue, add waypoints or drag and drop the start or end waypoint to see the gpx file changes.
 You can also select another option on the top right.
 
-## Loading leaflet-routing-gpx
+## Loading leaflet-lrm-extensions
 
 You have first to have Leaflet and Leaflet-Routing-Machine loaded and eventually lrm-mapzen:
 in the header:
@@ -26,7 +26,7 @@ and in the header or the body:
 		<script src="leaflet-routing-machine.min.js"></script>
 ```
 
-After, you have to load leaflet-routing-gpx:
+After, you have to load leaflet-lrm-extensions:
 ```HTML
 		<script src="L.Routing.Gpx.min.js"></script>
 ```
@@ -41,10 +41,10 @@ var Routing = L.Routing.gpx( { 	waypoints: [ L.latLng ( 50.51490,5.47101 ), L.la
 
 All the options of the L.Routing.control method remains valid, of course. Additionally, you can add some options for the L.Routing.gpx method.
 You have also to implement something for finally saving the GPX file. Due to the fact that currently, there isn't a common way for all browsers to save 
-a file on the local drive, this part is not implemented in leaflet-routing-gpx, but you can have a look on the demo file to understand how it's made for Firefox, 
+a file on the local drive, this part is not implemented in leaflet-lrm-extensions, but you can have a look on the demo file to understand how it's made for Firefox, 
 Chrome or Opera.
 
-## leaflet-routing-gpx documentation
+## leaflet-lrm-extensions documentation
 
 ### Additionnal options
 
