@@ -22,12 +22,18 @@
 							Each time the route is modified by Leaflet-Routing-Machine, the GPX data on the right are also modified.
 						</p>
 						<p id="HelpGpxFile">
-							Click on the button "GPX file" on the left to download the data as GPX file ( work only on modern browsers like Firefox... if you will dowload GPX data for old browsers, you have probably to implement a server side solution...)
+							Click on the button "GPX file" on the left to download the data as GPX file ( work only on modern browsers like Firefox... if you will download GPX data for old browsers, you have probably to implement a server side solution...)
+						</p>
+						<p id="HelpCoordinatesFile">
+							Click on the button "Coordinates file" on the left to download the route coordinates as txt file ( work only on modern browsers like Firefox...)
 						</p>
 					</div>
 				</div>
 				<div id="GpxFile" class="MenuItem">
 					<a download="leaflet-routing-gpx.gpx" id="downloadGpx" >GPX file</a>
+				</div>
+				<div id="CoordinatesFile" class="MenuItem">
+					<a download="leaflet-routing-gpx.txt" id="downloadCoordinates" >Coordinates file</a>
 				</div>
 				<div id="View" class="MenuItem">
 					<a href="https://github.com/wwwouaiebe/leaflet-routing-gpx">View On GitHub</a>
@@ -67,10 +73,8 @@
 			(function( ) 
 			{
 				'use strict';
-
 				var Map = L.map ( 'Map' ).setView( [ 50.49680, 5.51116 ], 13 );
 				L.tileLayer ( 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" title="Contributeurs de OpenStreetMap">Contributeurs de OpenStreetMap</a> | &copy; <a href="http://www.ouaie.be/" title="http://www.ouaie.be/">Christian Guyette</a>' } ).addTo ( Map );
-
 				var Routing = L.Routing.gpx( {
 					waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ],
 					showAlternatives: true,
@@ -92,9 +96,16 @@
 					dragStyles : [{color: 'black', opacity: 0.15, weight: 7}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'green', opacity: 1, weight: 2, dashArray: '7,12'}],
 				} ).addTo( Map );
 				L.Routing.errorControl( Routing ).addTo( Map );
-
-				document.getElementById ( "GpxXmlDeclaration" ).checked = true;
 				
+				var options = {
+					GpxXmlDeclaration : true,
+					GpxDate : 2,
+					GpxWaypoints : true,
+					GpxRoute : false,
+					GpxTrack : true
+				};
+				
+				document.getElementById ( "GpxXmlDeclaration" ).checked = true;
 				document.getElementById ( "GpxWaypoints" ).checked = true;
 				document.getElementById ( "GpxRoute" ).checked = false;
 				document.getElementById ( "GpxTrack" ).checked = true;
@@ -103,11 +114,11 @@
 				document.getElementById ( "GpxDate2" ).checked = true;
 				
 				var GpxFile = null;
-
+				var CoordinatesFile = null;
 				var UpdateGpx = function ( ) {
-					document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( );
+					document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( options );
 					try {
-						var GpxData = new File ( [ Routing.getGpxString ( ) ], { type: 'application/xml' } );
+						var GpxData = new File ( [ Routing.getGpxString ( options ) ], { type: 'application/xml' } );
 						if ( GpxFile !== null ) {
 							window.URL.revokeObjectURL ( GpxFile );
 						}
@@ -127,6 +138,29 @@
 						document.getElementById( 'HelpGpxFile' ).style.visibility = 'hidden';
 						document.getElementById( 'GpxFile' ).style.visibility = 'hidden';
 					}
+
+					try {
+						var CoordinatesData = new File ( [ Routing.getRouteCoordinates ( ) ], { type: 'text/txt' } );
+						if ( CoordinatesFile !== null ) {
+							window.URL.revokeObjectURL ( CoordinatesFile );
+						}
+						CoordinatesFile = window.URL.createObjectURL ( CoordinatesData );
+					}
+					catch ( Error ) {
+						if ( document.getElementById('GpxError') ) {
+							document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
+							document.getElementById('GpxError').style.color = "red";
+						}
+					}
+					
+					if ( CoordinatesFile ) {
+						document.getElementById('downloadCoordinates').href = CoordinatesFile;
+					}
+					else {
+						document.getElementById( 'HelpCoordinatesFile' ).style.visibility = 'hidden';
+						document.getElementById( 'CoordinatesFile' ).style.visibility = 'hidden';
+					}
+
 				}
 				
 				Routing.on ( 
@@ -136,16 +170,14 @@
 				document.getElementById ( "GpxXmlDeclaration" ).addEventListener ( 
 					'change', 
 					function ( event ){ 
-						Routing.options.GpxXmlDeclaration = event.target.checked;
+						options.GpxXmlDeclaration = event.target.checked;
 						UpdateGpx ( );
 					}
 				);
-
 				var UpdateDate = function ( event ){ 
-					Routing.options.GpxDate = parseInt ( event.target.value );
+					options.GpxDate = parseInt ( event.target.value );
 					UpdateGpx ( );
 				}
-
 				document.getElementById ( "GpxDate0" ).addEventListener ( 
 					'change', 
 					UpdateDate
@@ -158,27 +190,26 @@
 					'change', 
 					UpdateDate
 				);
-
 				document.getElementById ( "GpxWaypoints" ).addEventListener ( 
 					'change', 
 					function ( event ){ 
-						Routing.options.GpxWaypoints = event.target.checked;
+						console.log ( 'GpxWaypoints' );
+						options.GpxWaypoints = event.target.checked;
 						UpdateGpx ( );
 					}
 				);
-
 				document.getElementById ( "GpxRoute" ).addEventListener ( 
 					'change', 
 					function ( event ){ 
-						Routing.options.GpxRoute = event.target.checked;
+						console.log ( 'GpxRoute' );
+						options.GpxRoute = event.target.checked;
 						UpdateGpx ( );
 					}
 				);
-
 				document.getElementById ( "GpxTrack" ).addEventListener ( 
 					'change', 
 					function ( event ){ 
-						Routing.options.GpxTrack = event.target.checked;
+						options.GpxTrack = event.target.checked;
 						UpdateGpx ( );
 					}
 				);
