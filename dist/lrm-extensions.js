@@ -151,8 +151,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			return GPXString;
 		},
 		getRouteCoordinates : function ( ) {
-			if ( this._GpxRoute &&this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
-				return JSON.stringify ( this._GpxRoute.coordinates );
+			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
+				// we have coordinates...
+				if ( this._GpxRoute.coordinates [ 0 ].lat ) {
+					// ... in the Leaflet-routing-machine format 
+					return JSON.stringify ( this._GpxRoute.coordinates );
+				}
+				else {
+					var Coordinates = [];
+					// ...in the lrm-mapzen format
+					for ( var Counter = 0; Counter < this._GpxRoute.coordinates.length; Counter++ ) {
+						Coordinates [ Counter ] = L.latLng ( this._GpxRoute.coordinates [ Counter ] );			
+					}
+					return JSON.stringify ( Coordinates );
+				}
 			}
 			else {
 				return null;
@@ -171,6 +183,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			var RouteElement = document.createElement ( 'div' /*options.RouteElement*/ );
 			RouteElement.id = options.RouteElementId;
 			RouteElement.innerHTML = options.RouteHeader;
+
 			if ( this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
 				var SummaryElement = document.createElement ( 'div' );
 				RouteElement.appendChild ( SummaryElement );
@@ -191,7 +204,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					else {
 						// we suppose lrm-mapzen is used
 						if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
-							
 							var PreInstructionElement = document.createElement ( 'div' );
 							RouteElement.appendChild ( PreInstructionElement );
 							PreInstructionElement.outerHTML = L.Util.template (
