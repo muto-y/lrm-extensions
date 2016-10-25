@@ -25,6 +25,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		},
 		_updateLines: function ( routes ) {
 			this._GpxRoute = routes.route;
+			if ( ! routes.route.waypoints && routes.route.actualWaypoints) {
+				// GraphHopper route comes without waypoints. We use actualWaypoints as waypoints
+				routes.route.waypoints = routes.route.actualWaypoints;
+			}
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			this.fire ( 'gpxchanged' );
 		},
@@ -50,7 +54,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			}
 			if ( undefined === options.GpxRoute )
 			{
-				options.GpxRoute = false;
+				options.GpxRoute = true;
 			}
 			if ( undefined === options.GpxTrack )
 			{
@@ -157,34 +161,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					// ... in the Leaflet-routing-machine format 
 					return JSON.stringify ( this._GpxRoute.coordinates );
 				}
-				else {
-					var Coordinates = [];
-					// ...in the lrm-mapzen format
-					for ( var Counter = 0; Counter < this._GpxRoute.coordinates.length; Counter++ ) {
-						Coordinates [ Counter ] = L.latLng ( this._GpxRoute.coordinates [ Counter ] );			
-					}
-					return JSON.stringify ( Coordinates );
-				}
 			}
-			else {
-				return null;
-			}
+			
+			return null;
 		},
 		getRouteHTMLElement : function ( options ) {
+			
 			options = options || {};
 			options.RouteElement = options.RouteElement || 'div';
 			options.RouteHeader = options.RouteHeader || '<h1>Itinéraire:</h1>';
 			options.RouteElementId = options.RouteElementId || 'Route';
 			options.RouteSummaryTemplate = options.RouteSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }&nbsp;-&nbsp;Temps&nbsp;:&nbsp;{ Time }</div>';
 			options.CumDistanceTemplate = options.CumDistanceTemplate || '<div class="Route-CumDistance"> Distance cumulée&nbsp;:&nbsp;{ CumDistance }<div>';
-			options.RoutePreInstructionTemplate = options.RoutePreInstructionTemplate || '<div class="Route-PreInstruction">{Instruction}</div>'; 
-			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-PostInstruction">Continuez sur {NextDistance}</div>'; 
+			// OSRM and GraphHopper only:
+			options.RouteTextInstructionTemplate = options.RouteTextInstructionTemplate || '<div class="Route-TextInstruction">{TextInstruction}</div>'; 
+			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-PostInstruction">Continuez pendant {NextDistance}</div>'; 
+			// Mapzen only:
+			options.RoutePreInstructionTemplate = options.RoutePreInstructionTemplate || '<div class="Route-PreInstruction">{PreInstruction}</div>'; 
+			options.RoutePostInstructionTemplate = options.RoutePostInstructionTemplate || '<div class="Route-PostInstruction">{PostInstruction}</div>'; 
 
-			var RouteElement = document.createElement ( 'div' /*options.RouteElement*/ );
+			var RouteElement = document.createElement ( options.RouteElement );
 			RouteElement.id = options.RouteElementId;
 			RouteElement.innerHTML = options.RouteHeader;
 
-			if ( this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
+			if ( this._GpxRoute && this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
 				var SummaryElement = document.createElement ( 'div' );
 				RouteElement.appendChild ( SummaryElement );
 				SummaryElement.outerHTML = L.Util.template (
@@ -194,25 +194,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						'Time' : this._formatter.formatTime ( this._GpxRoute.summary.totalTime )
 					}
 				);
-
 				var Counter = 0;
 				var CumDistance = 0;
+				// mapzen : instructions.instruction
+				// graphhopper & OSRM: instructions.text
+				
 				for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
-					if ( this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ].lat ) {
-						//we suppose Leaflet-routing-machine is used
-					}
-					else {
-						// we suppose lrm-mapzen is used
-						if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
-							var PreInstructionElement = document.createElement ( 'div' );
-							RouteElement.appendChild ( PreInstructionElement );
-							PreInstructionElement.outerHTML = L.Util.template (
-								options.RoutePreInstructionTemplate,
-								{
-									'Instruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._getFrenchInstruction ( this._GpxRoute.instructions [ Counter ] ) )
-								}
-							);
-						}
+
+				// GraphHopper and OSRM text
+					if ( this._GpxRoute.instructions [ Counter ].text ) {
+						var TextInstructionElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( TextInstructionElement );
+						TextInstructionElement.outerHTML = L.Util.template (
+							options.RouteTextInstructionTemplate,
+							{
+								'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].text )
+							}
+						);
 						if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
 							var NextDistanceElement = document.createElement ( 'div' );
 							RouteElement.appendChild ( NextDistanceElement );
@@ -223,103 +221,47 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 								}
 							);
 						}
-						if ( 0 < CumDistance ) {
-							var CumDistanceElement = document.createElement ( 'div' );
-							RouteElement.appendChild ( CumDistanceElement );
-							CumDistanceElement.outerHTML = L.Util.template (
-								options.CumDistanceTemplate,
-								{
-									'CumDistance' : this._formatter.formatDistance ( Math.round ( CumDistance * 1000 ) / 1000 )
-								}
-							);
-						}
-						CumDistance += this._GpxRoute.instructions [ Counter ].distance;
 					}
+
+					// Mapzen pre-instruction
+					if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
+						var PreInstructionElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( PreInstructionElement );
+						PreInstructionElement.outerHTML = L.Util.template (
+							options.RoutePreInstructionTemplate,
+							{
+								'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
+							}
+						);
+					}
+
+					//Mapzen post-instruction
+					if ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
+						var PostInstructionElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( PostInstructionElement );
+						PostInstructionElement.outerHTML = L.Util.template (
+							options.RoutePostInstructionTemplate,
+							{
+								'PostInstruction' : this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
+							}
+						);
+					}
+					if ( 0 < CumDistance ) {
+						var CumDistanceElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( CumDistanceElement );
+						CumDistanceElement.outerHTML = L.Util.template (
+							options.CumDistanceTemplate,
+							{
+								'CumDistance' : this._formatter.formatDistance ( Math.round ( CumDistance * 1000 ) / 1000 )
+							}
+						);
+					}
+					CumDistance += this._GpxRoute.instructions [ Counter ].distance;
+
 				}
 			}
 			return RouteElement;
 		},
-	_getFrenchInstruction : function ( instruction ) {
-		var StreetNames = '';
-		var StreetCounter = 0;
-		if ( instruction.street_names ) {
-			for ( StreetCounter = 0; StreetCounter < instruction.street_names.length; StreetCounter ++ ) {
-				if ( 0 < StreetCounter ) {
-					StreetNames += ' - ';
-				}
-				StreetNames += instruction.street_names [ StreetCounter ];
-			}
-		}
-		if ( 0 < StreetNames.length && 28 != instruction.type ) {
-			StreetNames = 'sur ' + StreetNames;
-		}
-		
-		return this._getFrenchInstructionPrefix ( instruction.type ) + StreetNames;
-		
-	},
-	_getFrenchInstructionPrefix : function ( type ) {
-		switch (type) {
-			case 1:
-			return 'Départ ';
-			case 2:
-			return 'Le départ est à votre droite ';
-			case 3:
-			return 'Le départ est à votre gauche ';
-			case 4:
-			return 'Arrivée ';
-			case 5:
-			return 'L\'arrivée est à votre droite ';
-			case 6:
-			return 'L\'arrivée est à votre gauche ';
-			case 7:
-			return 'Devient ';
-			case 8:
-			return 'Continuez ';
-			case 9:
-			return 'Tournez légèrement à droite ';
-			case 10:
-			return 'Tournez à droite ';
-			case 11:
-			return 'Tournez fortement à droite ';
-			case 12:
-			return 'Faites demi-tour à droite ';
-			case 13:
-			return 'Faites demi-tour à gauche ';
-			case 14:
-			return 'Tournez fortement à gauche ';
-			case 15:
-			return 'Tournez à gauche ';
-			case 16:
-			return 'Tournez légèrement à gauche ';
-			case 17:
-			return 'Descendez tout droit ';
-			case 18:
-			return 'Descendez à droite';
-			case 19:
-			return 'Descendez à gauche ';
-			case 20:
-			return 'Sortez à droite ';
-			case 21:
-			return 'Sortez à gauche ';
-			case 22:
-			return 'kStayStraight';
-			case 23:
-			return 'Restez à droite ';
-			case 24:
-			return 'Restez à gauche ';
-			case 25:
-			return 'kMerge';
-			case 26:
-			return 'Entrez dans le rond-point ';
-			case 27:
-			return 'Sortez du rond-point ';
-			case 28:
-			return 'Entrez dans le ferry ';
-			case 29:
-			return 'Sortez du ferry ';
-		}	
-		return '';
-	}
 	});
 	
 	L.Routing.extensions = function ( options ) {
