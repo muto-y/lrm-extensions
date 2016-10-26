@@ -183,7 +183,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			var RouteElement = document.createElement ( options.RouteElement );
 			RouteElement.id = options.RouteElementId;
 			RouteElement.innerHTML = options.RouteHeader;
-
+				
 			if ( this._GpxRoute && this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
 				var SummaryElement = document.createElement ( 'div' );
 				RouteElement.appendChild ( SummaryElement );
@@ -201,7 +201,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				
 				for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
 
-				// GraphHopper and OSRM text
+					// GraphHopper and OSRM text
 					if ( this._GpxRoute.instructions [ Counter ].text ) {
 						var TextInstructionElement = document.createElement ( 'div' );
 						RouteElement.appendChild ( TextInstructionElement );
