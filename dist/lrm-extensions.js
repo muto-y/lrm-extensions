@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		initialize: function ( options ) {
 			L.Util.setOptions ( this, options );
 			L.Routing.Control.prototype.initialize.call ( this, options );
+			console.log ( this.getContainer ( ) );
 		},
 		_updateLines: function ( routes ) {
 			this._GpxRoute = routes.route;

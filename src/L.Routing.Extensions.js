@@ -22,6 +22,95 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			L.Util.setOptions ( this, options );
 			L.Routing.Control.prototype.initialize.call ( this, options );
 		},
+		_ButtonsDiv : null,
+		onAdd: function ( map ) {
+			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
+			this._ButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-Buttons' );
+
+			var BikeButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			BikeButton.type = 'radio';
+			BikeButton.setAttribute ( 'title' , 'Bike' );
+			BikeButton.setAttribute ( 'name' , 'transitmode' );
+			BikeButton.id = 'lrm-extensions-BikeButton';
+
+			var BikeLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			BikeLabel.setAttribute ( 'title' , 'Bike' );
+			BikeLabel.setAttribute ( 'for' , 'lrm-extensions-BikeButton' );
+			BikeLabel.id = 'lrm-extensions-BikeLabel';
+			
+			BikeButton.checked = true;
+
+			var PedestrianButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			PedestrianButton.type = 'radio';
+			PedestrianButton.setAttribute ( 'title' , 'Pedestrian' );
+			PedestrianButton.setAttribute ( 'name' , 'transitmode' );
+			PedestrianButton.id = 'lrm-extensions-PedestrianButton';
+
+			var PedestrianLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			PedestrianLabel.setAttribute ( 'title' , 'Pedestrian' );
+			PedestrianLabel.setAttribute ( 'for' , 'lrm-extensions-PedestrianButton' );
+			PedestrianLabel.id = 'lrm-extensions-PedestrianLabel';
+
+			var CarButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			CarButton.type = 'radio';
+			CarButton.setAttribute ( 'title' , 'Car' );
+			CarButton.setAttribute ( 'name' , 'transitmode' );
+			CarButton.id = 'lrm-extensions-CarButton';
+
+			var CarLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			CarLabel.setAttribute ( 'title' , 'Car' );
+			CarLabel.setAttribute ( 'for' , 'lrm-extensions-CarButton' );
+			CarLabel.id = 'lrm-extensions-CarLabel';
+
+			var GraphHopperButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			GraphHopperButton.type = 'radio';
+			GraphHopperButton.setAttribute ( 'title' , 'GraphHopper' );
+			GraphHopperButton.setAttribute ( 'name' , 'provider' );
+			GraphHopperButton.id = 'lrm-extensions-GraphHopperButton';
+
+			var GraphHopperLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			GraphHopperLabel.setAttribute ( 'title' , 'GraphHopper' );
+			GraphHopperLabel.setAttribute ( 'for' , 'lrm-extensions-GraphHopperButton' );
+			GraphHopperLabel.id = 'lrm-extensions-GraphHopperLabel';
+
+			GraphHopperButton.checked = true;
+
+			var MapzenButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			MapzenButton.type = 'radio';
+			MapzenButton.setAttribute ( 'title' , 'Mapzen' );
+			MapzenButton.setAttribute ( 'name' , 'provider' );
+			MapzenButton.id = 'lrm-extensions-MapzenButton';
+
+			var MapzenLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			MapzenLabel.setAttribute ( 'title' , 'Mapzen' );
+			MapzenLabel.setAttribute ( 'for' , 'lrm-extensions-MapzenButton' );
+			MapzenLabel.id = 'lrm-extensions-MapzenLabel';
+
+			var MapboxButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
+			MapboxButton.type = 'radio';
+			MapboxButton.setAttribute ( 'title' , 'Mapbox' );
+			MapboxButton.setAttribute ( 'name' , 'provider' );
+			MapboxButton.id = 'lrm-extensions-MapboxButton';
+
+			var MapboxLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
+			MapboxLabel.setAttribute ( 'title' , 'Mapbox' );
+			MapboxLabel.setAttribute ( 'for' , 'lrm-extensions-MapboxButton' );
+			MapboxLabel.id = 'lrm-extensions-MapboxLabel';
+
+			Container.insertBefore( this._ButtonsDiv, Container.firstChild);
+
+			return Container;
+		},
+		show : function ( ) {
+			L.Routing.Control.prototype.show.call ( this );
+			this._ButtonsDiv.setAttribute ( "style" , "display: block" );
+			console.log ( 'show' );
+		},
+		hide : function ( ) {
+			L.Routing.Control.prototype.hide.call ( this );
+			this._ButtonsDiv.setAttribute ( "style" , "display: none" );
+			console.log ( 'hide' );
+		},
 		_updateLines: function ( routes ) {
 			this._GpxRoute = routes.route;
 			if ( ! routes.route.waypoints && routes.route.actualWaypoints) {
