@@ -17,100 +17,263 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 	'use strict';
 
 	L.Routing.Extensions = L.Routing.Control.extend ( {
+
 		_GpxRoute : null,
+	
+		_setRouterAndFormatter : function ( options ) {
+			switch ( options.DefaultProvider ) {
+				case 'graphhopper':
+				{
+					var GraphHopperUrlParameters = {};
+					GraphHopperUrlParameters.locale = options.language;
+					switch ( options.DefaultTransitMode ) {
+						case 'bike':
+						{
+							GraphHopperUrlParameters.vehicle = 'bike';
+							break;
+						}
+						case 'pedestrian':
+						{
+							GraphHopperUrlParameters.vehicle = 'foot';
+							break;
+						}
+						case 'car':
+						{
+							GraphHopperUrlParameters.vehicle = 'car';
+							break;
+						}
+					}
+					options.router = L.Routing.graphHopper ( options.ProvidersKey.GraphHopper, { urlParameters : GraphHopperUrlParameters } );
+					break;
+				}
+				case 'mapzen':
+				{
+					var MapzenOptions = { directions_options: { language: options.language } };
+					switch ( options.DefaultTransitMode ) {
+						case 'bike':
+						{
+							MapzenOptions.costing = "bicycle";
+							break;
+						}
+						case 'pedestrian':
+						{
+							MapzenOptions.costing = "pedestrian";
+							break;
+						}
+						case 'car':
+						{
+							MapzenOptions.costing = "auto";
+							break;
+						}
+					}
+					MapzenOptions.costing_options = { bicycle: { bicycle_type: "Mountain", cycling_speed: "20.0", use_roads: "0", use_hills: "1"} };
+					options.router = L.Routing.mapzen( options.ProvidersKey.Mapzen, MapzenOptions );
+					options.formatter = new L.Routing.mapzenFormatter ( );
+					options.summaryTemplate = '<div class="start">{name}</div><div class="info {costing}">{distance}, {time}</div>';
+					options.routeWhileDragging = false;
+				}
+			}
+		},
+	
 		initialize: function ( options ) {
+			options.language = options.language  || 'en';
+			options.DefaultProvider = options.DefaultProvider || 'osrm';
+			options.DefaultProvider = options.DefaultProvider.toLowerCase();
+			options.DefaultTransitMode = options.DefaultTransitMode || 'car';
+			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase();
+			options.ProvidersKey = options.ProvidersKey || {};
+			options.ProvidersKey.GraphHopper = options.ProvidersKey.GraphHopper || '';
+			options.ProvidersKey.Mapzen = options.ProvidersKey.Mapzen || '';
+			options.ProvidersKey.Mapbox = options.ProvidersKey.Mapbox || '';
+			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 0 === options.ProvidersKey.Mapzen.length ) && ( 0 === options.ProvidersKey.Mapbox.length ) ) {
+				options.DefaultProvider = 'osrm';
+				options.DefaultTransitMode = 'car';				
+			}
+			if ( -1 === [ 'graphhopper', 'mapzen', 'mapbox', 'osrm' ].indexOf (  options.DefaultProvider ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.DefaultTransitMode ) ) {
+				options.DefaultTransitMode = 'car';				
+			}
+			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider )) {
+				options.DefaultProvider = 'osrm';
+				options.DefaultTransitMode = 'car';				
+			}
+			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider )) {
+				options.DefaultProvider = 'osrm';
+				options.DefaultTransitMode = 'car';				
+			}
+			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider )) {
+				options.DefaultProvider = 'osrm';
+				options.DefaultTransitMode = 'car';				
+			}
+
+			this._setRouterAndFormatter ( options );
+			
 			L.Util.setOptions ( this, options );
+			
+			
 			L.Routing.Control.prototype.initialize.call ( this, options );
 		},
+		
 		_ButtonsDiv : null,
+		
+		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
+			var RadioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
+			RadioButton.type = 'radio';
+			RadioButton.setAttribute ( 'title' , titleAttribute );
+			RadioButton.setAttribute ( 'name' , nameAttribute );
+			RadioButton.id = ButtonId;
+
+			var RadioLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', parentHTML );
+			RadioLabel.setAttribute ( 'title' , titleAttribute );
+			RadioLabel.setAttribute ( 'for' , ButtonId );
+			RadioLabel.id = LabelId;
+			
+			return RadioButton;
+		},
+		
 		onAdd: function ( map ) {
+
+			var Lrm = this;
 			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
 			this._ButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-Buttons' );
-
-			var BikeButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			BikeButton.type = 'radio';
-			BikeButton.setAttribute ( 'title' , 'Bike' );
-			BikeButton.setAttribute ( 'name' , 'transitmode' );
-			BikeButton.id = 'lrm-extensions-BikeButton';
-
-			var BikeLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			BikeLabel.setAttribute ( 'title' , 'Bike' );
-			BikeLabel.setAttribute ( 'for' , 'lrm-extensions-BikeButton' );
-			BikeLabel.id = 'lrm-extensions-BikeLabel';
+			var BikeButton;
+			var PedestrianButton;
+			var CarButton;
+			if ( ( 0 < this.options.ProvidersKey.GraphHopper.length ) || ( 0 < this.options.ProvidersKey.Mapzen.length ) || ( 0 < this.options.ProvidersKey.Mapbox.length ) ) {
+				BikeButton = this._createRadioButton ( this._ButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel');
+				PedestrianButton = this._createRadioButton ( this._ButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel');
+				CarButton = this._createRadioButton ( this._ButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel');
+				switch ( this.options.DefaultTransitMode ) {
+					case 'bike':
+						BikeButton.checked = true;
+						break;
+					case 'pedestrian':
+						PedestrianButton.checked = true;
+						break;
+					case 'car':
+						CarButton.checked = true;
+						break;
+					default:
+						CarButton.checked = true;
+						break;
+				}
+				L.DomEvent.on ( 
+					BikeButton, 
+					'click', 
+					function ( ) 
+					{ 
+						switch (Lrm.options.DefaultProvider ) {
+							case 'graphhopper':
+							Lrm.options.router.options.urlParameters.vehicle = 'bike';
+							break;
+							case 'mapzen':
+							Lrm.options.DefaultTransitMode = 'bike';
+							Lrm.options.router.costing = 'bicycle';
+							Lrm.options.router.options.costing = 'bicycle';
+							break;
+							case 'mapbox':
+							break;
+						}
+						Lrm.route ( );
+					}
+				);
+				L.DomEvent.on ( 
+					PedestrianButton, 
+					'click', 
+					function ( ) 
+					{ 
+						switch (Lrm.options.DefaultProvider ) {
+							case 'graphhopper':
+							Lrm.options.router.options.urlParameters.vehicle = 'foot';
+							break;
+							case 'mapzen':
+							Lrm.options.DefaultTransitMode = 'pedestrian';
+							Lrm.options.router.costing = 'pedestrian';
+							Lrm.options.router.options.costing = 'pedestrian';
+							break;
+							case 'mapbox':
+							break;
+						}
+						Lrm.route ( );
+					}
+				);
+				L.DomEvent.on ( 
+					CarButton, 
+					'click', 
+					function ( ) 
+					{ 
+						switch (Lrm.options.DefaultProvider ) {
+							case 'graphhopper':
+							Lrm.options.router.options.urlParameters.vehicle = 'car';
+							break;
+							case 'mapzen':
+							Lrm.options.DefaultTransitMode = 'car';
+							Lrm.options.router.costing = 'auto';
+							Lrm.options.router.options.costing = 'auto';
+							break;
+							case 'mapbox':
+							break;
+						}
+						Lrm.route ( );
+					}
+				);
+			}
+			else {
+				this.options.DefaultProvider = 'osrm';
+				this.options.DefaultTransitMode = 'car';				
+			}
 			
-			BikeButton.checked = true;
+			
+			var GraphHopperButton;
+			var MapzenButton;
+			var MapboxButton;
+			if ( 0 < this.options.ProvidersKey.GraphHopper.length ) {
+				GraphHopperButton = this._createRadioButton ( this._ButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
+			}
+			if ( 0 < this.options.ProvidersKey.Mapzen.length ) {
+				MapzenButton = this._createRadioButton ( this._ButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
+			}
+			if ( 0 < this.options.ProvidersKey.Mapbox.length ) {
+				MapboxButton = this._createRadioButton ( this._ButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
+			}
 
-			var PedestrianButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			PedestrianButton.type = 'radio';
-			PedestrianButton.setAttribute ( 'title' , 'Pedestrian' );
-			PedestrianButton.setAttribute ( 'name' , 'transitmode' );
-			PedestrianButton.id = 'lrm-extensions-PedestrianButton';
-
-			var PedestrianLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			PedestrianLabel.setAttribute ( 'title' , 'Pedestrian' );
-			PedestrianLabel.setAttribute ( 'for' , 'lrm-extensions-PedestrianButton' );
-			PedestrianLabel.id = 'lrm-extensions-PedestrianLabel';
-
-			var CarButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			CarButton.type = 'radio';
-			CarButton.setAttribute ( 'title' , 'Car' );
-			CarButton.setAttribute ( 'name' , 'transitmode' );
-			CarButton.id = 'lrm-extensions-CarButton';
-
-			var CarLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			CarLabel.setAttribute ( 'title' , 'Car' );
-			CarLabel.setAttribute ( 'for' , 'lrm-extensions-CarButton' );
-			CarLabel.id = 'lrm-extensions-CarLabel';
-
-			var GraphHopperButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			GraphHopperButton.type = 'radio';
-			GraphHopperButton.setAttribute ( 'title' , 'GraphHopper' );
-			GraphHopperButton.setAttribute ( 'name' , 'provider' );
-			GraphHopperButton.id = 'lrm-extensions-GraphHopperButton';
-
-			var GraphHopperLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			GraphHopperLabel.setAttribute ( 'title' , 'GraphHopper' );
-			GraphHopperLabel.setAttribute ( 'for' , 'lrm-extensions-GraphHopperButton' );
-			GraphHopperLabel.id = 'lrm-extensions-GraphHopperLabel';
-
-			GraphHopperButton.checked = true;
-
-			var MapzenButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			MapzenButton.type = 'radio';
-			MapzenButton.setAttribute ( 'title' , 'Mapzen' );
-			MapzenButton.setAttribute ( 'name' , 'provider' );
-			MapzenButton.id = 'lrm-extensions-MapzenButton';
-
-			var MapzenLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			MapzenLabel.setAttribute ( 'title' , 'Mapzen' );
-			MapzenLabel.setAttribute ( 'for' , 'lrm-extensions-MapzenButton' );
-			MapzenLabel.id = 'lrm-extensions-MapzenLabel';
-
-			var MapboxButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', this._ButtonsDiv );
-			MapboxButton.type = 'radio';
-			MapboxButton.setAttribute ( 'title' , 'Mapbox' );
-			MapboxButton.setAttribute ( 'name' , 'provider' );
-			MapboxButton.id = 'lrm-extensions-MapboxButton';
-
-			var MapboxLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', this._ButtonsDiv );
-			MapboxLabel.setAttribute ( 'title' , 'Mapbox' );
-			MapboxLabel.setAttribute ( 'for' , 'lrm-extensions-MapboxButton' );
-			MapboxLabel.id = 'lrm-extensions-MapboxLabel';
-
+			switch ( this.options.DefaultProvider ) {
+				case 'graphhopper':
+					if ( GraphHopperButton ) {
+						GraphHopperButton.checked = true;
+					}
+					break;
+				case 'mapzen':
+					if ( MapzenButton ) {
+						MapzenButton.checked = true;
+					}
+					break;
+				case 'mapbox':
+					if ( MapboxButton ) {
+						MapboxButton.checked = true;
+					}
+					break;
+			}
+			
+			var GpxButton = this._createRadioButton ( this._ButtonsDiv, 'GPX', 'gpx', 'lrm-extensions-GpxButton', 'lrm-extensions-GpxLabel');
+			
 			Container.insertBefore( this._ButtonsDiv, Container.firstChild);
 
 			return Container;
 		},
+		
 		show : function ( ) {
 			L.Routing.Control.prototype.show.call ( this );
 			this._ButtonsDiv.setAttribute ( "style" , "display: block" );
-			console.log ( 'show' );
 		},
+		
 		hide : function ( ) {
 			L.Routing.Control.prototype.hide.call ( this );
 			this._ButtonsDiv.setAttribute ( "style" , "display: none" );
-			console.log ( 'hide' );
 		},
+		
 		_updateLines: function ( routes ) {
 			this._GpxRoute = routes.route;
 			if ( ! routes.route.waypoints && routes.route.actualWaypoints) {
@@ -120,9 +283,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			this.fire ( 'gpxchanged' );
 		},
+		
 		_toXmlString : function ( XmlString ) {
 			return XmlString.replace ( '&', '&amp;' ).replace ( '\'', '&apos;' ).replace ('\"', '&quote;').replace ( '>', '&gt;' ).replace ( '<', '&lt;');
 		},
+		
 		getGpxString : function ( options ) {
 
 			if ( undefined === options ) {
@@ -242,6 +407,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 			return GPXString;
 		},
+		
 		getRouteCoordinates : function ( ) {
 			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
 				// we have coordinates...
@@ -253,6 +419,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			
 			return null;
 		},
+		
 		getRouteHTMLElement : function ( options ) {
 			
 			options = options || {};
