@@ -16,6 +16,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 (function() {
 	'use strict';
 
+	var Lrm;
+	var _Map;
+	
+	var ProviderChange  = function ( ) {
+		var options = Lrm.options;
+		options.summaryTemplate = '';
+		options.formatter = null;
+		var Position = Lrm.getPosition ( );
+		_Map.removeControl ( Lrm );
+		//Lrm.remove ( );
+		Lrm = L.Routing.extensions ( options ).addTo( _Map );
+		Lrm.setPosition ( Position );
+	};
+
 	L.Routing.Extensions = L.Routing.Control.extend ( {
 
 		_GpxRoute : null,
@@ -71,6 +85,31 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					options.formatter = new L.Routing.mapzenFormatter ( );
 					options.summaryTemplate = '<div class="start">{name}</div><div class="info {costing}">{distance}, {time}</div>';
 					options.routeWhileDragging = false;
+					break;
+				}
+				case 'mapbox':
+				{
+					var MapboxProfile;
+					switch ( options.DefaultTransitMode ) {
+						case 'bike':
+						{
+							MapboxProfile = { profile: 'mapbox/cycling'};
+							break;
+						}
+						case 'pedestrian':
+						{
+							MapboxProfile = { profile: 'mapbox/walking'};
+							break;
+						}
+						case 'car':
+						{
+							MapboxProfile = { profile: 'mapbox/driving'};
+							break;
+						}
+					}
+					options.router = L.Routing.mapbox ( options.ProvidersKey.Mapbox, MapboxProfile );
+					options.routeWhileDragging = false;
+					break;
 				}
 			}
 		},
@@ -135,7 +174,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		onAdd: function ( map ) {
 
-			var Lrm = this;
+			Lrm = this;
+			_Map = map;
+			
 			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
 			this._ButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-Buttons' );
 			var BikeButton;
@@ -174,6 +215,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							Lrm.options.router.options.costing = 'bicycle';
 							break;
 							case 'mapbox':
+							Lrm.options.router.options.profile = 'mapbox/cycling';
 							break;
 						}
 						Lrm.route ( );
@@ -194,6 +236,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							Lrm.options.router.options.costing = 'pedestrian';
 							break;
 							case 'mapbox':
+							Lrm.options.router.options.profile = 'mapbox/walking';
 							break;
 						}
 						Lrm.route ( );
@@ -214,6 +257,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							Lrm.options.router.options.costing = 'auto';
 							break;
 							case 'mapbox':
+							Lrm.options.router.options.profile = 'mapbox/driving';
 							break;
 						}
 						Lrm.route ( );
@@ -231,12 +275,39 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			var MapboxButton;
 			if ( 0 < this.options.ProvidersKey.GraphHopper.length ) {
 				GraphHopperButton = this._createRadioButton ( this._ButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
+				L.DomEvent.on ( 
+					GraphHopperButton, 
+					'click', 
+					function ( ) 
+					{ 
+						Lrm.options.DefaultProvider = 'graphhopper';
+						ProviderChange ( );
+					}
+				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapzen.length ) {
 				MapzenButton = this._createRadioButton ( this._ButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
+				L.DomEvent.on ( 
+					MapzenButton, 
+					'click', 
+					function ( ) 
+					{ 
+						Lrm.options.DefaultProvider = 'mapzen';
+						ProviderChange ( );
+					}
+				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapbox.length ) {
 				MapboxButton = this._createRadioButton ( this._ButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
+				L.DomEvent.on ( 
+					MapboxButton, 
+					'click', 
+					function ( ) 
+					{ 
+						Lrm.options.DefaultProvider = 'mapbox';
+						ProviderChange ( );
+					}
+				);
 			}
 
 			switch ( this.options.DefaultProvider ) {
