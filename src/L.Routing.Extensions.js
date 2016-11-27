@@ -16,24 +16,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 (function() {
 	'use strict';
 
-	var Lrm;
-	var _Map;
-	
-	var ProviderChange  = function ( ) {
-		var options = Lrm.options;
-		options.summaryTemplate = '';
-		options.formatter = null;
-		var Position = Lrm.getPosition ( );
-		_Map.removeControl ( Lrm );
-		//Lrm.remove ( );
-		Lrm = L.Routing.extensions ( options ).addTo( _Map );
-		Lrm.setPosition ( Position );
-	};
-
+	var Lrm = null;
 	L.Routing.Extensions = L.Routing.Control.extend ( {
 
 		_GpxRoute : null,
-	
+		_TransitMode : 'bike',
+		ProviderChange : function ( Provider ) {
+			this.options.summaryTemplate = '';
+			this.options.formatter = null;
+			this.options.DefaultTransitMode = this._TransitMode;
+			this.options.DefaultProvider = Provider;
+			this.initialize ( this.options );
+		},
 		_setRouterAndFormatter : function ( options ) {
 			switch ( options.DefaultProvider ) {
 				case 'graphhopper':
@@ -115,6 +109,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		},
 	
 		initialize: function ( options ) {
+			Lrm = this;
 			options.language = options.language  || 'en';
 			options.DefaultProvider = options.DefaultProvider || 'osrm';
 			options.DefaultProvider = options.DefaultProvider.toLowerCase();
@@ -146,15 +141,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				options.DefaultProvider = 'osrm';
 				options.DefaultTransitMode = 'car';				
 			}
-
+			this._TransitMode = options.DefaultTransitMode;
+			
+			
+			
 			this._setRouterAndFormatter ( options );
 			
 			L.Util.setOptions ( this, options );
 			
 			
 			L.Routing.Control.prototype.initialize.call ( this, options );
+
+			console.log( JSON.stringify ( this.options ) );
+			console.log ( this.options ); 
 		},
-		
 		_ButtonsDiv : null,
 		
 		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
@@ -173,10 +173,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		},
 		
 		onAdd: function ( map ) {
-
-			Lrm = this;
-			_Map = map;
-			
 			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
 			this._ButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-Buttons' );
 			var BikeButton;
@@ -203,9 +199,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					BikeButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						switch (Lrm.options.DefaultProvider ) {
+						Lrm._TransitMode = 'bike';
+						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'bike';
 							break;
@@ -224,9 +221,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					PedestrianButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						switch (Lrm.options.DefaultProvider ) {
+						Lrm._TransitMode = 'pedestrian';
+						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'foot';
 							break;
@@ -245,9 +243,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					CarButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						switch (Lrm.options.DefaultProvider ) {
+						Lrm._TransitMode = 'car';
+						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'car';
 							break;
@@ -278,10 +277,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					GraphHopperButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						Lrm.options.DefaultProvider = 'graphhopper';
-						ProviderChange ( );
+						Lrm.ProviderChange ( 'graphhopper' );
+						Lrm.fire ( 'providerchanged');
 					}
 				);
 			}
@@ -290,10 +289,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					MapzenButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						Lrm.options.DefaultProvider = 'mapzen';
-						ProviderChange ( );
+						Lrm.ProviderChange ( 'mapzen' );
+						Lrm.fire ( 'providerchanged');
 					}
 				);
 			}
@@ -302,10 +301,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				L.DomEvent.on ( 
 					MapboxButton, 
 					'click', 
-					function ( ) 
+					function ( event ) 
 					{ 
-						Lrm.options.DefaultProvider = 'mapbox';
-						ProviderChange ( );
+						Lrm.ProviderChange ( 'mapbox' );
+						Lrm.fire ( 'providerchanged');
 					}
 				);
 			}
@@ -344,7 +343,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			L.Routing.Control.prototype.hide.call ( this );
 			this._ButtonsDiv.setAttribute ( "style" , "display: none" );
 		},
-		
 		_updateLines: function ( routes ) {
 			this._GpxRoute = routes.route;
 			if ( ! routes.route.waypoints && routes.route.actualWaypoints) {
