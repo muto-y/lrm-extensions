@@ -22,11 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		_GpxRoute : null,
 		_TransitMode : 'bike',
 		ProviderChange : function ( Provider ) {
+			this._plan._removeMarkers ( );
 			this.options.summaryTemplate = '';
 			this.options.formatter = null;
 			this.options.DefaultTransitMode = this._TransitMode;
 			this.options.DefaultProvider = Provider;
+			this.options.draggableWaypoints = true;
 			this.initialize ( this.options );
+			this._plan._map = this._map;
 		},
 		_setRouterAndFormatter : function ( options ) {
 			switch ( options.DefaultProvider ) {
@@ -52,6 +55,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						}
 					}
 					options.router = L.Routing.graphHopper ( options.ProvidersKey.GraphHopper, { urlParameters : GraphHopperUrlParameters } );
+					options.routeWhileDragging = false;
 					break;
 				}
 				case 'mapzen':
@@ -112,9 +116,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			Lrm = this;
 			options.language = options.language  || 'en';
 			options.DefaultProvider = options.DefaultProvider || 'osrm';
-			options.DefaultProvider = options.DefaultProvider.toLowerCase();
+			options.DefaultProvider = options.DefaultProvider.toLowerCase ( );
 			options.DefaultTransitMode = options.DefaultTransitMode || 'car';
-			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase();
+			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase ( );
 			options.ProvidersKey = options.ProvidersKey || {};
 			options.ProvidersKey.GraphHopper = options.ProvidersKey.GraphHopper || '';
 			options.ProvidersKey.Mapzen = options.ProvidersKey.Mapzen || '';
@@ -129,31 +133,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.DefaultTransitMode ) ) {
 				options.DefaultTransitMode = 'car';				
 			}
-			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider )) {
+			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider ) ) {
 				options.DefaultProvider = 'osrm';
 				options.DefaultTransitMode = 'car';				
 			}
-			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider )) {
+			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider ) ) {
 				options.DefaultProvider = 'osrm';
 				options.DefaultTransitMode = 'car';				
 			}
-			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider )) {
+			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider ) ) {
 				options.DefaultProvider = 'osrm';
 				options.DefaultTransitMode = 'car';				
 			}
 			this._TransitMode = options.DefaultTransitMode;
 			
-			
-			
 			this._setRouterAndFormatter ( options );
 			
 			L.Util.setOptions ( this, options );
 			
-			
 			L.Routing.Control.prototype.initialize.call ( this, options );
-
-			console.log( JSON.stringify ( this.options ) );
-			console.log ( this.options ); 
 		},
 		_ButtonsDiv : null,
 		
@@ -179,9 +177,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			var PedestrianButton;
 			var CarButton;
 			if ( ( 0 < this.options.ProvidersKey.GraphHopper.length ) || ( 0 < this.options.ProvidersKey.Mapzen.length ) || ( 0 < this.options.ProvidersKey.Mapbox.length ) ) {
-				BikeButton = this._createRadioButton ( this._ButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel');
-				PedestrianButton = this._createRadioButton ( this._ButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel');
-				CarButton = this._createRadioButton ( this._ButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel');
+				BikeButton = this._createRadioButton ( this._ButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
+				PedestrianButton = this._createRadioButton ( this._ButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
+				CarButton = this._createRadioButton ( this._ButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
 				switch ( this.options.DefaultTransitMode ) {
 					case 'bike':
 						BikeButton.checked = true;
@@ -202,12 +200,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'bike';
+						Lrm.options.DefaultTransitMode = 'bike';
 						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'bike';
 							break;
 							case 'mapzen':
-							Lrm.options.DefaultTransitMode = 'bike';
 							Lrm.options.router.costing = 'bicycle';
 							Lrm.options.router.options.costing = 'bicycle';
 							break;
@@ -224,12 +222,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'pedestrian';
+						Lrm.options.DefaultTransitMode = 'pedestrian';
 						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'foot';
 							break;
 							case 'mapzen':
-							Lrm.options.DefaultTransitMode = 'pedestrian';
 							Lrm.options.router.costing = 'pedestrian';
 							Lrm.options.router.options.costing = 'pedestrian';
 							break;
@@ -246,12 +244,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'car';
+						Lrm.options.DefaultTransitMode = 'car';
 						switch ( Lrm.options.DefaultProvider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'car';
 							break;
 							case 'mapzen':
-							Lrm.options.DefaultTransitMode = 'car';
 							Lrm.options.router.costing = 'auto';
 							Lrm.options.router.options.costing = 'auto';
 							break;
@@ -280,7 +278,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm.ProviderChange ( 'graphhopper' );
-						Lrm.fire ( 'providerchanged');
+						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
@@ -292,7 +290,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm.ProviderChange ( 'mapzen' );
-						Lrm.fire ( 'providerchanged');
+						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
@@ -304,7 +302,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					function ( event ) 
 					{ 
 						Lrm.ProviderChange ( 'mapbox' );
-						Lrm.fire ( 'providerchanged');
+						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
@@ -344,12 +342,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			this._ButtonsDiv.setAttribute ( "style" , "display: none" );
 		},
 		_updateLines: function ( routes ) {
+			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			this._GpxRoute = routes.route;
-			if ( ! routes.route.waypoints && routes.route.actualWaypoints) {
+			if ( 'graphhopper' === this.options.DefaultProvider && ! routes.route.waypoints && routes.route.actualWaypoints) {
 				// GraphHopper route comes without waypoints. We use actualWaypoints as waypoints
 				routes.route.waypoints = routes.route.actualWaypoints;
 			}
-			L.Routing.Control.prototype._updateLines.call ( this, routes );
+			if ( routes.route.actualWaypoints ) {
+				this.options.waypoints = routes.route.actualWaypoints;
+			}					
 			this.fire ( 'gpxchanged' );
 		},
 		
