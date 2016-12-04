@@ -31,6 +31,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			this.initialize ( this.options );
 			this._plan._map = this._map;
 		},
+		getProvider : function ( ) {
+			return this.options.DefaultProvider;
+		},
+		getTransitMode : function ( ) {
+				return this.options.DefaultTransitMode;
+		},
 		_setRouterAndFormatter : function ( options ) {
 			switch ( options.DefaultProvider ) {
 				case 'graphhopper':
@@ -153,8 +159,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			
 			L.Routing.Control.prototype.initialize.call ( this, options );
 		},
-		_ButtonsDiv : null,
-		
+		_RoutingButtonsDiv : null,
+		_ServicesButtonsDiv : null,
 		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
 			var RadioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
 			RadioButton.type = 'radio';
@@ -172,14 +178,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		onAdd: function ( map ) {
 			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
-			this._ButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-Buttons' );
+			this._RoutingButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' );
 			var BikeButton;
 			var PedestrianButton;
 			var CarButton;
 			if ( ( 0 < this.options.ProvidersKey.GraphHopper.length ) || ( 0 < this.options.ProvidersKey.Mapzen.length ) || ( 0 < this.options.ProvidersKey.Mapbox.length ) ) {
-				BikeButton = this._createRadioButton ( this._ButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
-				PedestrianButton = this._createRadioButton ( this._ButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
-				CarButton = this._createRadioButton ( this._ButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
+				BikeButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
+				PedestrianButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
+				CarButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
 				switch ( this.options.DefaultTransitMode ) {
 					case 'bike':
 						BikeButton.checked = true;
@@ -214,6 +220,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							break;
 						}
 						Lrm.route ( );
+						Lrm.fire ( 'transitmodechanged' );
 					}
 				);
 				L.DomEvent.on ( 
@@ -236,6 +243,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							break;
 						}
 						Lrm.route ( );
+						Lrm.fire ( 'transitmodechanged' );
 					}
 				);
 				L.DomEvent.on ( 
@@ -258,6 +266,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 							break;
 						}
 						Lrm.route ( );
+						Lrm.fire ( 'transitmodechanged' );
 					}
 				);
 			}
@@ -271,7 +280,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			var MapzenButton;
 			var MapboxButton;
 			if ( 0 < this.options.ProvidersKey.GraphHopper.length ) {
-				GraphHopperButton = this._createRadioButton ( this._ButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
+				GraphHopperButton = this._createRadioButton ( this._RoutingButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
 				L.DomEvent.on ( 
 					GraphHopperButton, 
 					'click', 
@@ -283,7 +292,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapzen.length ) {
-				MapzenButton = this._createRadioButton ( this._ButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
+				MapzenButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
 				L.DomEvent.on ( 
 					MapzenButton, 
 					'click', 
@@ -295,7 +304,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapbox.length ) {
-				MapboxButton = this._createRadioButton ( this._ButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
+				MapboxButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
 				L.DomEvent.on ( 
 					MapboxButton, 
 					'click', 
@@ -324,22 +333,51 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					}
 					break;
 			}
+			Container.insertBefore( this._RoutingButtonsDiv, Container.firstChild);
 			
-			var GpxButton = this._createRadioButton ( this._ButtonsDiv, 'GPX', 'gpx', 'lrm-extensions-GpxButton', 'lrm-extensions-GpxLabel');
+			this._ServicesButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' );
 			
-			Container.insertBefore( this._ButtonsDiv, Container.firstChild);
+			var GpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-Button', this._ServicesButtonsDiv );
+			GpxAnchor.id = 'downloadGpx';
+			GpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
+			GpxAnchor.innerHTML = '<span id="lrm-extensions-GpxLabel" class="lrm-extensions-ServicesButton"></span>';
+			Container.insertBefore( this._ServicesButtonsDiv, Container.firstChild);
 
 			return Container;
+		},
+		_prepareGpxLink : function ( ) {
+			// gpx file is prepared
+			// try... catch is needed because some browsers don't implement window.URL.createObjectURL correctly :-( 
+			var GpxFile = null;
+
+			try {
+				var GpxData = new File ( [ this.getGpxString ( ) ], { type: 'application/xml' } );
+				if ( GpxFile !== null ) {
+					window.URL.revokeObjectURL ( GpxFile );
+				}
+				GpxFile = window.URL.createObjectURL ( GpxData );
+			}
+			catch ( Error ) {
+			}
+			
+			if ( GpxFile ) {
+				document.getElementById( 'downloadGpx').href = GpxFile;
+			}
+			else {
+				document.getElementById( 'downloadGpx' ).style.visibility = 'hidden';
+			}
 		},
 		
 		show : function ( ) {
 			L.Routing.Control.prototype.show.call ( this );
-			this._ButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._RoutingButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._ServicesButtonsDiv.setAttribute ( "style" , "display: block" );
 		},
 		
 		hide : function ( ) {
 			L.Routing.Control.prototype.hide.call ( this );
-			this._ButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._RoutingButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._ServicesButtonsDiv.setAttribute ( "style" , "display: none" );
 		},
 		_updateLines: function ( routes ) {
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
@@ -350,7 +388,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			}
 			if ( routes.route.actualWaypoints ) {
 				this.options.waypoints = routes.route.actualWaypoints;
-			}					
+			}		
+			this._prepareGpxLink ( );
 			this.fire ( 'gpxchanged' );
 		},
 		
