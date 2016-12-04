@@ -536,10 +536,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			options.RouteHeader = options.RouteHeader || '<h1>Itinéraire:</h1>';
 			options.RouteElementId = options.RouteElementId || 'Route';
 			options.RouteSummaryTemplate = options.RouteSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }&nbsp;-&nbsp;Temps&nbsp;:&nbsp;{ Time }</div>';
-			options.CumDistanceTemplate = options.CumDistanceTemplate || '<div class="Route-CumDistance"> Distance cumulée&nbsp;:&nbsp;{ CumDistance }<div>';
-			// OSRM and GraphHopper only:
+			options.CumDistanceTemplate = options.CumDistanceTemplate || '<div class="Route-CumDistance"> Distance cumulée&nbsp;:&nbsp;environ&nbsp;{ CumDistance }<div>';
+			// OSRM, GraphHopper and Mapbox only:
 			options.RouteTextInstructionTemplate = options.RouteTextInstructionTemplate || '<div class="Route-TextInstruction">{TextInstruction}</div>'; 
-			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-PostInstruction">Continuez pendant {NextDistance}</div>'; 
+			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Ensuite, continuez pendant environ {NextDistance}</div>'; 
 			// Mapzen only:
 			options.RoutePreInstructionTemplate = options.RoutePreInstructionTemplate || '<div class="Route-PreInstruction">{PreInstruction}</div>'; 
 			options.RoutePostInstructionTemplate = options.RoutePostInstructionTemplate || '<div class="Route-PostInstruction">{PostInstruction}</div>'; 
@@ -564,51 +564,77 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				// graphhopper & OSRM: instructions.text
 				
 				for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
-
-					// GraphHopper and OSRM text
-					if ( this._GpxRoute.instructions [ Counter ].text ) {
-						var TextInstructionElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( TextInstructionElement );
-						TextInstructionElement.outerHTML = L.Util.template (
-							options.RouteTextInstructionTemplate,
-							{
-								'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].text )
-							}
-						);
-						if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
-							var NextDistanceElement = document.createElement ( 'div' );
-							RouteElement.appendChild ( NextDistanceElement );
-							NextDistanceElement.outerHTML = L.Util.template (
-								options.RouteNextDistanceTemplate,
-								{
-									'NextDistance' : this._formatter.formatDistance ( Math.round ( this._GpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
+					switch ( this.options.DefaultProvider ) {
+						case 'graphhopper':
+							// GraphHopper text
+							if ( this._GpxRoute.instructions [ Counter ].text ) {
+								var TextInstructionElement = document.createElement ( 'div' );
+								RouteElement.appendChild ( TextInstructionElement );
+								TextInstructionElement.outerHTML = L.Util.template (
+									options.RouteTextInstructionTemplate,
+									{
+										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].text )
+									}
+								);
+								if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
+									var NextDistanceElement = document.createElement ( 'div' );
+									RouteElement.appendChild ( NextDistanceElement );
+									NextDistanceElement.outerHTML = L.Util.template (
+										options.RouteNextDistanceTemplate,
+										{
+											'NextDistance' : this._formatter.formatDistance ( Math.round ( this._GpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
+										}
+									);
 								}
-							);
-						}
-					}
-
-					// Mapzen pre-instruction
-					if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
-						var PreInstructionElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( PreInstructionElement );
-						PreInstructionElement.outerHTML = L.Util.template (
-							options.RoutePreInstructionTemplate,
-							{
-								'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
 							}
-						);
-					}
-
-					//Mapzen post-instruction
-					if ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
-						var PostInstructionElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( PostInstructionElement );
-						PostInstructionElement.outerHTML = L.Util.template (
-							options.RoutePostInstructionTemplate,
-							{
-								'PostInstruction' : this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
+							break;
+						case 'mapzen':
+							// Mapzen pre-instruction
+							if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
+								var PreInstructionElement = document.createElement ( 'div' );
+								RouteElement.appendChild ( PreInstructionElement );
+								PreInstructionElement.outerHTML = L.Util.template (
+									options.RoutePreInstructionTemplate,
+									{
+										'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
+									}
+								);
 							}
-						);
+							//Mapzen post-instruction
+							if ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
+								var PostInstructionElement = document.createElement ( 'div' );
+								RouteElement.appendChild ( PostInstructionElement );
+								PostInstructionElement.outerHTML = L.Util.template (
+									options.RoutePostInstructionTemplate,
+									{
+										'PostInstruction' : this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
+									}
+								);
+							}
+							break;
+						case 'osrm':
+						case 'mapbox':
+							var MapboxTextInstructionElement = document.createElement ( 'div' );
+							RouteElement.appendChild ( MapboxTextInstructionElement );
+							MapboxTextInstructionElement.outerHTML = L.Util.template (
+									options.RouteTextInstructionTemplate,
+									{
+										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._formatter.formatInstruction ( this._GpxRoute.instructions [ Counter ] )
+									}
+								);
+							if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
+								var MapboxNextDistanceElement = document.createElement ( 'div' );
+								RouteElement.appendChild ( MapboxNextDistanceElement );
+								MapboxNextDistanceElement.outerHTML = L.Util.template (
+									options.RouteNextDistanceTemplate,
+									{
+										'NextDistance' : this._formatter.formatDistance ( Math.round ( this._GpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
+									}
+								);
+							}
+							break;
+						default:
+							break;
 					}
 					if ( 0 < CumDistance ) {
 						var CumDistanceElement = document.createElement ( 'div' );
@@ -621,8 +647,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						);
 					}
 					CumDistance += this._GpxRoute.instructions [ Counter ].distance;
-
-				}
+				} // end for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ )
 			}
 			return RouteElement;
 		},
