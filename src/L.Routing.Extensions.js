@@ -18,7 +18,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 	var Lrm = null;
 	L.Routing.Extensions = L.Routing.Control.extend ( {
-
+		_RoutePolylines : L.layerGroup ( ),
 		_GpxRoute : null,
 		_TransitMode : 'bike',
 		ProviderChange : function ( Provider ) {
@@ -333,17 +333,90 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					}
 					break;
 			}
-			Container.insertBefore( this._RoutingButtonsDiv, Container.firstChild);
 			
 			this._ServicesButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' );
-			
-			var GpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-Button', this._ServicesButtonsDiv );
+
+			var GpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._ServicesButtonsDiv );
 			GpxAnchor.id = 'downloadGpx';
 			GpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
-			GpxAnchor.innerHTML = '<span id="lrm-extensions-GpxLabel" class="lrm-extensions-ServicesButton"></span>';
+			GpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+
+			var RouteToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._ServicesButtonsDiv );
+			RouteToLineButton.id = 'lrm-extensions-RouteToLineButton';
+			//RouteToLineButton.type = 'button';
+			var LineOptions = {
+				color : '#ff0000',
+				width : 5,
+				clear : false,
+				name : ''
+			};
+			L.DomEvent.on ( 
+				RouteToLineButton, 
+				'click', 
+				function ( event ) 
+				{ 
+					if ( Lrm._GpxRoute && Lrm._GpxRoute.name && 0 < Lrm._GpxRoute.name.length ) {
+						LineOptions.name = Lrm._GpxRoute.name;
+					}
+					else {
+						LineOptions.name = '';
+					}
+						
+					if ( typeof module !== 'undefined' && module.exports ) {
+						LineOptions = require ('./L.Routing.Extensions.Dialogs' )( LineOptions, Lrm._map, Lrm );
+					}
+					else {
+						LineOptions = polylineDialog ( LineOptions, Lrm._map, Lrm );
+					}
+				}
+			);
+
+			Container.insertBefore( this._RoutingButtonsDiv, Container.firstChild);
 			Container.insertBefore( this._ServicesButtonsDiv, Container.firstChild);
 
+			this._RoutePolylines.addTo ( map );
+			
 			return Container;
+		},
+		RouteToLine  : function ( options ) {
+			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
+				var polyline = L.polyline ( this._GpxRoute.coordinates, { color : options.color, weight : options.width } );	
+				polyline.bindTooltip ( options.name );
+				polyline.LrmExtensionsName = options.name;
+
+				var PolylineMenu;
+				if ( typeof module !== 'undefined' && module.exports ) {
+					PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
+				}
+				else {
+					PolylineMenu = polylineMenu;
+				}
+				L.DomEvent.on ( 
+					polyline,
+					'click',
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, Lrm );
+					}
+				);
+				L.DomEvent.on ( 
+					polyline,
+					'contextmenu',
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, Lrm );
+					}
+				);
+				
+				this._RoutePolylines.addLayer ( polyline );
+				
+				
+				
+				if ( options.clear ) {
+					this.setWaypoints ( [] ); 
+				}
+			}
+		},
+		getRoutePolylines : function ( ) {
+			return this._RoutePolylines;
 		},
 		_prepareGpxLink : function ( ) {
 			// gpx file is prepared
