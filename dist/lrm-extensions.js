@@ -124,7 +124,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					options.clear = false;
 					map.closePopup ( );
 					polyline.setStyle ( { color : options.color, weight : options.width } );
-					polyline.bindTooltip ( options.name );
+					if ( 0 < options.name.length ) {
+						polyline.bindTooltip ( options.name );
+					}
+					else
+					{
+						polyline.unbindTooltip ( );
+					}
 					polyline.LrmExtensionsName = options.name;
 				} 
 			);
@@ -291,30 +297,141 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+--- L.Routing.Extensions.js file ---------------------------------------------------------------------------------------
+
+This file contains:
+	- the extend for the L.Routing.Control
+	- the module.exports implementation
+
+Changes:
+	- v1.0.0:
+		- created
+
+Doc reviewed 20161022
+Tests to do...
+
+------------------------------------------------------------------------------------------------------------------------
+*/
+
 (function() {
 	'use strict';
 
+	/*
+	--- Lrm : global variable used to store a reference to the routing machine----------------------------------------------
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
 	var Lrm = null;
+	
+	
 	L.Routing.Extensions = L.Routing.Control.extend ( {
+
+		/*
+		--- _RoutePolylines : Variable used to store and display the polylines -------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+	
 		_RoutePolylines : L.layerGroup ( ),
+
+		/*
+		--- _GpxRoute : Variable used to store the GPX data --------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_GpxRoute : null,
+
+		/*
+		--- _TransitMode : the transit mode. Can be 'pedestrian', 'bike' or 'car' ----------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_TransitMode : 'bike',
-		ProviderChange : function ( Provider ) {
-			this._plan._removeMarkers ( );
-			this.options.summaryTemplate = '';
-			this.options.formatter = null;
-			this.options.DefaultTransitMode = this._TransitMode;
-			this.options.DefaultProvider = Provider;
-			this.options.draggableWaypoints = true;
-			this.initialize ( this.options );
-			this._plan._map = this._map;
+		
+		/*
+		--- initialize method --------------------------------------------------------------------------------------------------
+
+		Constructor
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+			
+		initialize: function ( options ) {
+			
+			// the reference to the routing machine is initialized
+			Lrm = this;
+			
+			// options are verified...
+			// ... language ...
+			options.language = options.language  || 'en';
+			
+			// ... transit mode
+			options.DefaultTransitMode = options.DefaultTransitMode || 'car';
+			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase ( );
+			
+			// ... routing provider ...
+			options.DefaultProvider = options.DefaultProvider || 'osrm';
+			options.DefaultProvider = options.DefaultProvider.toLowerCase ( );
+
+			// ... providers keys ...
+			options.ProvidersKey = options.ProvidersKey || {};
+			options.ProvidersKey.GraphHopper = options.ProvidersKey.GraphHopper || '';
+			options.ProvidersKey.Mapzen = options.ProvidersKey.Mapzen || '';
+			options.ProvidersKey.Mapbox = options.ProvidersKey.Mapbox || '';
+			
+			// the provider is set to 'osrm' and transit mode is set to 'car' when providers key are not filled
+			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 0 === options.ProvidersKey.Mapzen.length ) && ( 0 === options.ProvidersKey.Mapbox.length ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+			
+			// the provider is set to 'osrm' when the given provider is invalid
+			if ( -1 === [ 'graphhopper', 'mapzen', 'mapbox', 'osrm' ].indexOf (  options.DefaultProvider ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+			
+			// the transit mode is set to 'car' when the given transit mode is invalid
+			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.DefaultTransitMode ) ) {
+				options.DefaultTransitMode = 'car';				
+			}
+			
+			// the provider is set to 'osrm' when the given provider is 'graphhopper' and the GraphHopper key is empty
+			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+			
+			// the provider is set to 'osrm' when the given provider is 'mapzen' and the Mapzen key is empty
+			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+
+			// the provider is set to 'osrm' when the given provider is 'mapbox' and the Mapbox key is empty
+			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider ) ) {
+				options.DefaultProvider = 'osrm';
+			}
+
+			// the transit mode is set to 'car' when the provider is 'osrm'
+			if ( 'osrm' === options.DefaultProvider ) {
+				options.DefaultTransitMode = 'car';		
+			}				
+
+			
+			this._TransitMode = options.DefaultTransitMode;
+			
+			this._setRouterAndFormatter ( options );
+			
+			L.Util.setOptions ( this, options );
+			
+			L.Routing.Control.prototype.initialize.call ( this, options );
 		},
-		getProvider : function ( ) {
-			return this.options.DefaultProvider;
-		},
-		getTransitMode : function ( ) {
-				return this.options.DefaultTransitMode;
-		},
+		
+		/*
+		--- _setRouterAndFormatter method --------------------------------------------------------------------------------------
+
+		This method changes the router and the formatter, depending of the provider and transit mode
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_setRouterAndFormatter : function ( options ) {
 			switch ( options.DefaultProvider ) {
 				case 'graphhopper':
@@ -395,50 +512,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				}
 			}
 		},
-	
-		initialize: function ( options ) {
-			Lrm = this;
-			options.language = options.language  || 'en';
-			options.DefaultProvider = options.DefaultProvider || 'osrm';
-			options.DefaultProvider = options.DefaultProvider.toLowerCase ( );
-			options.DefaultTransitMode = options.DefaultTransitMode || 'car';
-			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase ( );
-			options.ProvidersKey = options.ProvidersKey || {};
-			options.ProvidersKey.GraphHopper = options.ProvidersKey.GraphHopper || '';
-			options.ProvidersKey.Mapzen = options.ProvidersKey.Mapzen || '';
-			options.ProvidersKey.Mapbox = options.ProvidersKey.Mapbox || '';
-			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 0 === options.ProvidersKey.Mapzen.length ) && ( 0 === options.ProvidersKey.Mapbox.length ) ) {
-				options.DefaultProvider = 'osrm';
-				options.DefaultTransitMode = 'car';				
-			}
-			if ( -1 === [ 'graphhopper', 'mapzen', 'mapbox', 'osrm' ].indexOf (  options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
-			}
-			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.DefaultTransitMode ) ) {
-				options.DefaultTransitMode = 'car';				
-			}
-			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
-				options.DefaultTransitMode = 'car';				
-			}
-			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
-				options.DefaultTransitMode = 'car';				
-			}
-			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
-				options.DefaultTransitMode = 'car';				
-			}
-			this._TransitMode = options.DefaultTransitMode;
-			
-			this._setRouterAndFormatter ( options );
-			
-			L.Util.setOptions ( this, options );
-			
-			L.Routing.Control.prototype.initialize.call ( this, options );
+
+		/*
+		--- _ProviderChange method --------------------------------------------------------------------------------------
+
+		This method is called when the provider is changed.
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_ProviderChange : function ( Provider ) {
+			this._plan._removeMarkers ( );
+			this.options.summaryTemplate = '';
+			this.options.formatter = null;
+			this.options.DefaultTransitMode = this._TransitMode;
+			this.options.DefaultProvider = Provider;
+			this.options.draggableWaypoints = true;
+			this.initialize ( this.options );
+			this._plan._map = this._map;
 		},
-		_RoutingButtonsDiv : null,
-		_ServicesButtonsDiv : null,
+		
+		/*
+		--- _createRadioButton method ------------------------------------------------------------------------------------------
+
+		Helper method for the button creation
+		See also the lrm-extensions.css file. Radio buttons are used for chanching the image when the button is clicked
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
 			var RadioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
 			RadioButton.type = 'radio';
@@ -454,16 +556,44 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			return RadioButton;
 		},
 		
+		/*
+		--- _RoutingButtonsDiv : Variable used to store the provider and transit mode buttons DIV ------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_RoutingButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' ),
+
+		/*
+		--- _ServicesButtonsDiv : Variable used to store the GPX and Polyline buttons DIV --------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_ServicesButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' ),
+
+		/*
+		--- onAdd method -------------------------------------------------------------------------------------------------------
+
+		overload of the onAdd method
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		onAdd: function ( map ) {
+			
+			// The prototype method is called
 			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
-			this._RoutingButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' );
+			
 			var BikeButton;
 			var PedestrianButton;
 			var CarButton;
 			if ( ( 0 < this.options.ProvidersKey.GraphHopper.length ) || ( 0 < this.options.ProvidersKey.Mapzen.length ) || ( 0 < this.options.ProvidersKey.Mapbox.length ) ) {
+				
+				// Transit mode buttons are created
 				BikeButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
 				PedestrianButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
 				CarButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
+
+				// The correct transit mode button is checked
 				switch ( this.options.DefaultTransitMode ) {
 					case 'bike':
 						BikeButton.checked = true;
@@ -478,6 +608,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						CarButton.checked = true;
 						break;
 				}
+				
+				// event for the 'bike' button
 				L.DomEvent.on ( 
 					BikeButton, 
 					'click', 
@@ -501,6 +633,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						Lrm.fire ( 'transitmodechanged' );
 					}
 				);
+				
+				// event for the 'pedestrian' button
 				L.DomEvent.on ( 
 					PedestrianButton, 
 					'click', 
@@ -524,6 +658,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						Lrm.fire ( 'transitmodechanged' );
 					}
 				);
+				
+				// event for the 'car' button
 				L.DomEvent.on ( 
 					CarButton, 
 					'click', 
@@ -548,52 +684,55 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					}
 				);
 			}
-			else {
-				this.options.DefaultProvider = 'osrm';
-				this.options.DefaultTransitMode = 'car';				
-			}
-			
-			
+
+			// Providers buttons are created
 			var GraphHopperButton;
 			var MapzenButton;
 			var MapboxButton;
 			if ( 0 < this.options.ProvidersKey.GraphHopper.length ) {
+				// GraphHopper button
 				GraphHopperButton = this._createRadioButton ( this._RoutingButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
+				// event for the GraphHopper button
 				L.DomEvent.on ( 
 					GraphHopperButton, 
 					'click', 
 					function ( event ) 
 					{ 
-						Lrm.ProviderChange ( 'graphhopper' );
+						Lrm._ProviderChange ( 'graphhopper' );
 						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapzen.length ) {
+				// Mapzen button
 				MapzenButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
+				// event for the Mapzen button
 				L.DomEvent.on ( 
 					MapzenButton, 
 					'click', 
 					function ( event ) 
 					{ 
-						Lrm.ProviderChange ( 'mapzen' );
+						Lrm._ProviderChange ( 'mapzen' );
 						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
 			if ( 0 < this.options.ProvidersKey.Mapbox.length ) {
+				// Mapbox button
 				MapboxButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
+				// event for the Mapbox button
 				L.DomEvent.on ( 
 					MapboxButton, 
 					'click', 
 					function ( event ) 
 					{ 
-						Lrm.ProviderChange ( 'mapbox' );
+						Lrm._ProviderChange ( 'mapbox' );
 						Lrm.fire ( 'providerchanged' );
 					}
 				);
 			}
 
+			// The correct provider button is checked
 			switch ( this.options.DefaultProvider ) {
 				case 'graphhopper':
 					if ( GraphHopperButton ) {
@@ -612,16 +751,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 					break;
 			}
 			
-			this._ServicesButtonsDiv = L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' );
-
+			// the GPX button is created
 			var GpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._ServicesButtonsDiv );
 			GpxAnchor.id = 'downloadGpx';
 			GpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
 			GpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
 
+			// the polyline button is created
 			var RouteToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._ServicesButtonsDiv );
 			RouteToLineButton.id = 'lrm-extensions-RouteToLineButton';
-			//RouteToLineButton.type = 'button';
+
+			// event for the polyline button
 			var LineOptions = {
 				color : '#ff0000',
 				width : 5,
@@ -649,17 +789,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				}
 			);
 
+			// buttons are added to the control
 			Container.insertBefore( this._RoutingButtonsDiv, Container.firstChild);
 			Container.insertBefore( this._ServicesButtonsDiv, Container.firstChild);
 
+			// the layer group for the polyline is added to the map
 			this._RoutePolylines.addTo ( map );
 			
 			return Container;
 		},
+		
+		/*
+		--- RouteToLine method -------------------------------------------------------------------------------------------------
+
+		This method transforms the current route into a polyline
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		RouteToLine  : function ( options ) {
 			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
 				var polyline = L.polyline ( this._GpxRoute.coordinates, { color : options.color, weight : options.width } );	
-				polyline.bindTooltip ( options.name );
+				if ( 0 < options.name.length ) {
+					polyline.bindTooltip ( options.name );
+				}
+				else
+				{
+					polyline.unbindTooltip ( );
+				}
 				polyline.LrmExtensionsName = options.name;
 
 				var PolylineMenu;
@@ -669,6 +826,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				else {
 					PolylineMenu = polylineMenu;
 				}
+
 				L.DomEvent.on ( 
 					polyline,
 					'click',
@@ -693,9 +851,84 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				}
 			}
 		},
+		
+		/*
+		--- RouteToLine method -------------------------------------------------------------------------------------------------
+
+		Simple get method...
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
 		getRoutePolylines : function ( ) {
 			return this._RoutePolylines;
 		},
+		
+		/*
+		--- show method --------------------------------------------------------------------------------------------------------
+
+		overload of the show method
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
+		show : function ( ) {
+			L.Routing.Control.prototype.show.call ( this );
+			this._RoutingButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._ServicesButtonsDiv.setAttribute ( "style" , "display: block" );
+		},
+		
+		/*
+		--- hide method --------------------------------------------------------------------------------------------------------
+
+		overload of the hide method
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
+		hide : function ( ) {
+			L.Routing.Control.prototype.hide.call ( this );
+			this._RoutingButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._ServicesButtonsDiv.setAttribute ( "style" , "display: none" );
+		},
+
+		/*
+		--- _updateLines method ------------------------------------------------------------------------------------------------
+
+		overload of the _updateLines method
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_updateLines: function ( routes ) {
+			L.Routing.Control.prototype._updateLines.call ( this, routes );
+			// route is saved for the GPX and polyline
+			this._GpxRoute = routes.route;
+			
+			// Some changes for Graphhopper...
+			if ( 'graphhopper' === this.options.DefaultProvider && ! routes.route.waypoints && routes.route.actualWaypoints) {
+				// GraphHopper route comes without waypoints. We use actualWaypoints as waypoints
+				routes.route.waypoints = routes.route.actualWaypoints;
+			}
+			
+			// ... and others providers
+			if ( routes.route.actualWaypoints ) {
+				this.options.waypoints = routes.route.actualWaypoints;
+			}		
+			
+			// GPX file
+			this._prepareGpxLink ( );
+			this.fire ( 'gpxchanged' );
+		},
+		
+		/*
+		--- _prepareGpxLink method ---------------------------------------------------------------------------------------------
+
+		This method set the GPX data in the GPX button
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_prepareGpxLink : function ( ) {
 			// gpx file is prepared
 			// try... catch is needed because some browsers don't implement window.URL.createObjectURL correctly :-( 
@@ -719,36 +952,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			}
 		},
 		
-		show : function ( ) {
-			console.log ( this._RoutePolylines.getLayers().length );
-			
-			L.Routing.Control.prototype.show.call ( this );
-			this._RoutingButtonsDiv.setAttribute ( "style" , "display: block" );
-			this._ServicesButtonsDiv.setAttribute ( "style" , "display: block" );
-		},
-		
-		hide : function ( ) {
-			L.Routing.Control.prototype.hide.call ( this );
-			this._RoutingButtonsDiv.setAttribute ( "style" , "display: none" );
-			this._ServicesButtonsDiv.setAttribute ( "style" , "display: none" );
-		},
-		_updateLines: function ( routes ) {
-			L.Routing.Control.prototype._updateLines.call ( this, routes );
-			this._GpxRoute = routes.route;
-			if ( 'graphhopper' === this.options.DefaultProvider && ! routes.route.waypoints && routes.route.actualWaypoints) {
-				// GraphHopper route comes without waypoints. We use actualWaypoints as waypoints
-				routes.route.waypoints = routes.route.actualWaypoints;
-			}
-			if ( routes.route.actualWaypoints ) {
-				this.options.waypoints = routes.route.actualWaypoints;
-			}		
-			this._prepareGpxLink ( );
-			this.fire ( 'gpxchanged' );
-		},
-		
+		/*
+		--- _toXmlString -------------------------------------------------------------------------------------------------------
+
+		Helper method to transform a string into a XML string
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_toXmlString : function ( XmlString ) {
 			return XmlString.replace ( '&', '&amp;' ).replace ( '\'', '&apos;' ).replace ('\"', '&quote;').replace ( '>', '&gt;' ).replace ( '<', '&lt;');
 		},
+
+		/*
+		--- getGpxString -------------------------------------------------------------------------------------------------------
+
+		This method creates a GPX string from the route data
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
 		
 		getGpxString : function ( options ) {
 
@@ -870,18 +1092,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			return GPXString;
 		},
 		
-		getRouteCoordinates : function ( ) {
-			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
-				// we have coordinates...
-				if ( this._GpxRoute.coordinates [ 0 ].lat ) {
-					// ... in the Leaflet-routing-machine format 
-					return JSON.stringify ( this._GpxRoute.coordinates );
-				}
-			}
-			
-			return null;
-		},
-		
+		/*
+		--- getRouteHTMLElement ------------------------------------------------------------------------------------------------
+
+		This method creates an HTML element with the route description
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		getRouteHTMLElement : function ( options ) {
 			
 			options = options || {};
@@ -1006,12 +1224,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		},
 	});
 	
+	/*
+	--- L.Routing.extensions function --------------------------------------------------------------------------------------
+
+	L.Routing.Extensions factory function
+
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
 	L.Routing.extensions = function ( options ) {
 		return new L.Routing.Extensions ( options );
 	};
+
+	/*
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
 
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = L.Routing.extensions;
 	}
 } ) ( );
+
+/* --- End of L.Routing.Extensions.js file --- */
+
 },{"./L.Routing.Extensions.Dialogs":1,"./L.Routing.Extensions.PolylineMenu":2}]},{},[3]);
