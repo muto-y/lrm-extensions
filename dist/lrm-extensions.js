@@ -366,56 +366,56 @@ Tests to do...
 			options.language = options.language  || 'en';
 			
 			// ... transit mode
-			options.DefaultTransitMode = options.DefaultTransitMode || 'car';
-			options.DefaultTransitMode = options.DefaultTransitMode.toLowerCase ( );
+			options.transitMode = options.transitMode || 'car';
+			options.transitMode = options.transitMode.toLowerCase ( );
 			
 			// ... routing provider ...
-			options.DefaultProvider = options.DefaultProvider || 'osrm';
-			options.DefaultProvider = options.DefaultProvider.toLowerCase ( );
+			options.provider = options.provider || 'osrm';
+			options.provider = options.provider.toLowerCase ( );
 
 			// ... providers keys ...
-			options.ProvidersKey = options.ProvidersKey || {};
-			options.ProvidersKey.GraphHopper = options.ProvidersKey.GraphHopper || '';
-			options.ProvidersKey.Mapzen = options.ProvidersKey.Mapzen || '';
-			options.ProvidersKey.Mapbox = options.ProvidersKey.Mapbox || '';
+			options.providerKeys = options.providerKeys || {};
+			options.providerKeys.GraphHopper = options.providerKeys.GraphHopper || '';
+			options.providerKeys.Mapzen = options.providerKeys.Mapzen || '';
+			options.providerKeys.Mapbox = options.providerKeys.Mapbox || '';
 			
 			// the provider is set to 'osrm' and transit mode is set to 'car' when providers key are not filled
-			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 0 === options.ProvidersKey.Mapzen.length ) && ( 0 === options.ProvidersKey.Mapbox.length ) ) {
-				options.DefaultProvider = 'osrm';
+			if ( ( 0 === options.providerKeys.GraphHopper.length ) && ( 0 === options.providerKeys.Mapzen.length ) && ( 0 === options.providerKeys.Mapbox.length ) ) {
+				options.provider = 'osrm';
 			}
 			
 			// the provider is set to 'osrm' when the given provider is invalid
-			if ( -1 === [ 'graphhopper', 'mapzen', 'mapbox', 'osrm' ].indexOf (  options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
+			if ( -1 === [ 'graphhopper', 'mapzen', 'mapbox', 'osrm' ].indexOf (  options.provider ) ) {
+				options.provider = 'osrm';
 			}
 			
 			// the transit mode is set to 'car' when the given transit mode is invalid
-			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.DefaultTransitMode ) ) {
-				options.DefaultTransitMode = 'car';				
+			if ( -1 === [ 'bike', 'pedestrian', 'car' ].indexOf (  options.transitMode ) ) {
+				options.transitMode = 'car';				
 			}
 			
 			// the provider is set to 'osrm' when the given provider is 'graphhopper' and the GraphHopper key is empty
-			if ( ( 0 === options.ProvidersKey.GraphHopper.length ) && ( 'graphhopper' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
+			if ( ( 0 === options.providerKeys.GraphHopper.length ) && ( 'graphhopper' === options.provider ) ) {
+				options.provider = 'osrm';
 			}
 			
 			// the provider is set to 'osrm' when the given provider is 'mapzen' and the Mapzen key is empty
-			if ( ( 0 === options.ProvidersKey.Mapzen.length ) && ( 'mapzen' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
+			if ( ( 0 === options.providerKeys.Mapzen.length ) && ( 'mapzen' === options.provider ) ) {
+				options.provider = 'osrm';
 			}
 
 			// the provider is set to 'osrm' when the given provider is 'mapbox' and the Mapbox key is empty
-			if ( ( 0 === options.ProvidersKey.Mapbox.length ) && ( 'mapbox' === options.DefaultProvider ) ) {
-				options.DefaultProvider = 'osrm';
+			if ( ( 0 === options.providerKeys.Mapbox.length ) && ( 'mapbox' === options.provider ) ) {
+				options.provider = 'osrm';
 			}
 
 			// the transit mode is set to 'car' when the provider is 'osrm'
-			if ( 'osrm' === options.DefaultProvider ) {
-				options.DefaultTransitMode = 'car';		
+			if ( 'osrm' === options.provider ) {
+				options.transitMode = 'car';		
 			}				
 
 			
-			this._TransitMode = options.DefaultTransitMode;
+			this._TransitMode = options.transitMode;
 			
 			this._setRouterAndFormatter ( options );
 			
@@ -433,12 +433,12 @@ Tests to do...
 		*/
 
 		_setRouterAndFormatter : function ( options ) {
-			switch ( options.DefaultProvider ) {
+			switch ( options.provider ) {
 				case 'graphhopper':
 				{
 					var GraphHopperUrlParameters = {};
 					GraphHopperUrlParameters.locale = options.language;
-					switch ( options.DefaultTransitMode ) {
+					switch ( options.transitMode ) {
 						case 'bike':
 						{
 							GraphHopperUrlParameters.vehicle = 'bike';
@@ -455,14 +455,14 @@ Tests to do...
 							break;
 						}
 					}
-					options.router = L.Routing.graphHopper ( options.ProvidersKey.GraphHopper, { urlParameters : GraphHopperUrlParameters } );
+					options.router = L.Routing.graphHopper ( options.providerKeys.GraphHopper, { urlParameters : GraphHopperUrlParameters } );
 					options.routeWhileDragging = false;
 					break;
 				}
 				case 'mapzen':
 				{
 					var MapzenOptions = { directions_options: { language: options.language } };
-					switch ( options.DefaultTransitMode ) {
+					switch ( options.transitMode ) {
 						case 'bike':
 						{
 							MapzenOptions.costing = "bicycle";
@@ -480,7 +480,7 @@ Tests to do...
 						}
 					}
 					MapzenOptions.costing_options = { bicycle: { bicycle_type: "Mountain", cycling_speed: "20.0", use_roads: "0", use_hills: "1"} };
-					options.router = L.Routing.mapzen( options.ProvidersKey.Mapzen, MapzenOptions );
+					options.router = L.Routing.mapzen( options.providerKeys.Mapzen, MapzenOptions );
 					options.formatter = new L.Routing.mapzenFormatter ( );
 					options.summaryTemplate = '<div class="start">{name}</div><div class="info {costing}">{distance}, {time}</div>';
 					options.routeWhileDragging = false;
@@ -489,7 +489,7 @@ Tests to do...
 				case 'mapbox':
 				{
 					var MapboxProfile;
-					switch ( options.DefaultTransitMode ) {
+					switch ( options.transitMode ) {
 						case 'bike':
 						{
 							MapboxProfile = { profile: 'mapbox/cycling'};
@@ -506,7 +506,7 @@ Tests to do...
 							break;
 						}
 					}
-					options.router = L.Routing.mapbox ( options.ProvidersKey.Mapbox, MapboxProfile );
+					options.router = L.Routing.mapbox ( options.providerKeys.Mapbox, MapboxProfile );
 					options.routeWhileDragging = false;
 					break;
 				}
@@ -525,8 +525,8 @@ Tests to do...
 			this._plan._removeMarkers ( );
 			this.options.summaryTemplate = '';
 			this.options.formatter = null;
-			this.options.DefaultTransitMode = this._TransitMode;
-			this.options.DefaultProvider = Provider;
+			this.options.transitMode = this._TransitMode;
+			this.options.provider = Provider;
 			this.options.draggableWaypoints = true;
 			this.initialize ( this.options );
 			this._plan._map = this._map;
@@ -586,7 +586,7 @@ Tests to do...
 			var BikeButton;
 			var PedestrianButton;
 			var CarButton;
-			if ( ( 0 < this.options.ProvidersKey.GraphHopper.length ) || ( 0 < this.options.ProvidersKey.Mapzen.length ) || ( 0 < this.options.ProvidersKey.Mapbox.length ) ) {
+			if ( ( 0 < this.options.providerKeys.GraphHopper.length ) || ( 0 < this.options.providerKeys.Mapzen.length ) || ( 0 < this.options.providerKeys.Mapbox.length ) ) {
 				
 				// Transit mode buttons are created
 				BikeButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
@@ -594,7 +594,7 @@ Tests to do...
 				CarButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
 
 				// The correct transit mode button is checked
-				switch ( this.options.DefaultTransitMode ) {
+				switch ( this.options.transitMode ) {
 					case 'bike':
 						BikeButton.checked = true;
 						break;
@@ -616,8 +616,8 @@ Tests to do...
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'bike';
-						Lrm.options.DefaultTransitMode = 'bike';
-						switch ( Lrm.options.DefaultProvider ) {
+						Lrm.options.transitMode = 'bike';
+						switch ( Lrm.options.provider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'bike';
 							break;
@@ -641,8 +641,8 @@ Tests to do...
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'pedestrian';
-						Lrm.options.DefaultTransitMode = 'pedestrian';
-						switch ( Lrm.options.DefaultProvider ) {
+						Lrm.options.transitMode = 'pedestrian';
+						switch ( Lrm.options.provider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'foot';
 							break;
@@ -666,8 +666,8 @@ Tests to do...
 					function ( event ) 
 					{ 
 						Lrm._TransitMode = 'car';
-						Lrm.options.DefaultTransitMode = 'car';
-						switch ( Lrm.options.DefaultProvider ) {
+						Lrm.options.transitMode = 'car';
+						switch ( Lrm.options.provider ) {
 							case 'graphhopper':
 							Lrm.options.router.options.urlParameters.vehicle = 'car';
 							break;
@@ -689,7 +689,7 @@ Tests to do...
 			var GraphHopperButton;
 			var MapzenButton;
 			var MapboxButton;
-			if ( 0 < this.options.ProvidersKey.GraphHopper.length ) {
+			if ( 0 < this.options.providerKeys.GraphHopper.length ) {
 				// GraphHopper button
 				GraphHopperButton = this._createRadioButton ( this._RoutingButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
 				// event for the GraphHopper button
@@ -703,7 +703,7 @@ Tests to do...
 					}
 				);
 			}
-			if ( 0 < this.options.ProvidersKey.Mapzen.length ) {
+			if ( 0 < this.options.providerKeys.Mapzen.length ) {
 				// Mapzen button
 				MapzenButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
 				// event for the Mapzen button
@@ -717,7 +717,7 @@ Tests to do...
 					}
 				);
 			}
-			if ( 0 < this.options.ProvidersKey.Mapbox.length ) {
+			if ( 0 < this.options.providerKeys.Mapbox.length ) {
 				// Mapbox button
 				MapboxButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
 				// event for the Mapbox button
@@ -733,7 +733,7 @@ Tests to do...
 			}
 
 			// The correct provider button is checked
-			switch ( this.options.DefaultProvider ) {
+			switch ( this.options.provider ) {
 				case 'graphhopper':
 					if ( GraphHopperButton ) {
 						GraphHopperButton.checked = true;
@@ -852,6 +852,40 @@ Tests to do...
 			}
 		},
 		
+		addPolyline : function ( pnts, options, name ) {
+			var polyline = L.polyline ( pnts, options );	
+			if ( 0 < name.length ) {
+				polyline.bindTooltip ( name );
+			}
+			polyline.LrmExtensionsName = name;
+			
+			var PolylineMenu;
+			if ( typeof module !== 'undefined' && module.exports ) {
+				PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
+			}
+			else {
+				PolylineMenu = polylineMenu;
+			}
+
+			L.DomEvent.on ( 
+				polyline,
+				'click',
+				function ( MouseEvent ) {
+					PolylineMenu ( MouseEvent, this._map, Lrm );
+				}
+			);
+			L.DomEvent.on ( 
+				polyline,
+				'contextmenu',
+				function ( MouseEvent ) {
+					PolylineMenu ( MouseEvent, this._map, Lrm );
+				}
+			);
+			
+			this._RoutePolylines.addLayer ( polyline );
+		
+		},
+		
 		/*
 		--- RouteToLine method -------------------------------------------------------------------------------------------------
 
@@ -906,7 +940,7 @@ Tests to do...
 			this._GpxRoute = routes.route;
 			
 			// Some changes for Graphhopper...
-			if ( 'graphhopper' === this.options.DefaultProvider && ! routes.route.waypoints && routes.route.actualWaypoints) {
+			if ( 'graphhopper' === this.options.provider && ! routes.route.waypoints && routes.route.actualWaypoints) {
 				// GraphHopper route comes without waypoints. We use actualWaypoints as waypoints
 				routes.route.waypoints = routes.route.actualWaypoints;
 			}
@@ -989,9 +1023,9 @@ Tests to do...
 			{
 				options.GpxWaypoints = true;
 			}
-			if ( undefined === options.GpxRoute )
+			if ( undefined === options.gpxRoute )
 			{
-				options.GpxRoute = true;
+				options.gpxRoute = true;
 			}
 			if ( undefined === options.GpxTrack )
 			{
@@ -1039,7 +1073,7 @@ Tests to do...
 					}
 				}
 				if ( this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length  ) {
-					if ( options.GpxRoute  ) {
+					if ( options.gpxRoute  ) {
 						GPXString += Tab1 + "<rte>";
 						if ( this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
 							for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
@@ -1135,7 +1169,7 @@ Tests to do...
 				// graphhopper & OSRM: instructions.text
 				
 				for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
-					switch ( this.options.DefaultProvider ) {
+					switch ( this.options.provider ) {
 						case 'graphhopper':
 							// GraphHopper text
 							if ( this._GpxRoute.instructions [ Counter ].text ) {
