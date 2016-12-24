@@ -32,18 +32,18 @@ Tests to do...
 	L.Routing.Extensions = L.Routing.Control.extend ( {
 
 		/*
-		--- _RoutePolylines : Variable used to store and display the polylines -------------------------------------------------
+		--- _routePolylines : Variable used to store and display the polylines -------------------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 	
-		_RoutePolylines : L.layerGroup ( ),
+		_routePolylines : L.layerGroup ( ),
 
 		/*
-		--- _GpxRoute : Variable used to store the GPX data --------------------------------------------------------------------
+		--- _gpxRoute : Variable used to store the GPX data --------------------------------------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_GpxRoute : null,
+		_gpxRoute : null,
 
 		/*
 		--- transitMode getter -------------------------------------------------------------------------------------------------
@@ -64,10 +64,7 @@ Tests to do...
 		*/
 			
 		initialize: function ( options ) {
-			
-			// the reference to the routing machine is initialized
-			Lrm = this;
-			
+
 			// options are verified...
 			// ... language ...
 			options.language = options.language  || 'en';
@@ -86,7 +83,7 @@ Tests to do...
 			options.providerKeys.Mapzen = options.providerKeys.Mapzen || '';
 			options.providerKeys.Mapbox = options.providerKeys.Mapbox || '';
 			
-			// the provider is set to 'osrm' and transit mode is set to 'car' when providers key are not filled
+			// the provider is set to 'osrm' when providers key are not filled
 			if ( ( 0 === options.providerKeys.GraphHopper.length ) && ( 0 === options.providerKeys.Mapzen.length ) && ( 0 === options.providerKeys.Mapbox.length ) ) {
 				options.provider = 'osrm';
 			}
@@ -119,7 +116,16 @@ Tests to do...
 			// the transit mode is set to 'car' when the provider is 'osrm'
 			if ( 'osrm' === options.provider ) {
 				options.transitMode = 'car';		
-			}				
+			}	
+
+			var routerOptions = {
+				providerKeys : options.providerKeys,
+				language : options.language,
+				provider : options.provider,
+				transitMode : options.transitMode
+			};
+			var routerFactory = require ( './L.Routing.Extensions.Router' );
+			options.router = routerFactory ( routerOptions );
 
 			L.Util.setOptions ( this, options );
 			
@@ -134,33 +140,33 @@ Tests to do...
 		*/
 
 		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
-			var RadioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
-			RadioButton.type = 'radio';
-			RadioButton.setAttribute ( 'title' , titleAttribute );
-			RadioButton.setAttribute ( 'name' , nameAttribute );
-			RadioButton.id = ButtonId;
+			var radioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
+			radioButton.type = 'radio';
+			radioButton.setAttribute ( 'title' , titleAttribute );
+			radioButton.setAttribute ( 'name' , nameAttribute );
+			radioButton.id = ButtonId;
 
-			var RadioLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', parentHTML );
-			RadioLabel.setAttribute ( 'title' , titleAttribute );
-			RadioLabel.setAttribute ( 'for' , ButtonId );
-			RadioLabel.id = LabelId;
+			var radioLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', parentHTML );
+			radioLabel.setAttribute ( 'title' , titleAttribute );
+			radioLabel.setAttribute ( 'for' , ButtonId );
+			radioLabel.id = LabelId;
 			
-			return RadioButton;
+			return radioButton;
 		},
 		
 		/*
-		--- _RoutingButtonsDiv : Variable used to store the provider and transit mode buttons DIV ------------------------------
+		--- _routingButtonsDiv : Variable used to store the provider and transit mode buttons DIV ------------------------------
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_RoutingButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' ),
+		_routingButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' ),
 
 		/*
-		--- _ServicesButtonsDiv : Variable used to store the GPX and Polyline buttons DIV --------------------------------------
+		--- _servicesButtonsDiv : Variable used to store the GPX and Polyline buttons DIV --------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_ServicesButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' ),
+		_servicesButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' ),
 
 		/*
 		--- onAdd method -------------------------------------------------------------------------------------------------------
@@ -171,219 +177,208 @@ Tests to do...
 		onAdd: function ( map ) {
 			
 			// The prototype method is called
-			var Container = L.Routing.Control.prototype.onAdd.call ( this, map );
+			var container = L.Routing.Control.prototype.onAdd.call ( this, map );
 			
-			var BikeButton;
-			var PedestrianButton;
-			var CarButton;
+			var bikeButton;
+			var pedestrianButton;
+			var carButton;
 			if ( ( 0 < this.options.providerKeys.GraphHopper.length ) || ( 0 < this.options.providerKeys.Mapzen.length ) || ( 0 < this.options.providerKeys.Mapbox.length ) ) {
 				
 				// Transit mode buttons are created
-				BikeButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
-				PedestrianButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
-				CarButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
+				bikeButton = this._createRadioButton ( this._routingButtonsDiv, 'Bike', 'transitmode', 'lrm-extensions-BikeButton', 'lrm-extensions-BikeLabel' );
+				pedestrianButton = this._createRadioButton ( this._routingButtonsDiv, 'Pedestrian', 'transitmode', 'lrm-extensions-PedestrianButton', 'lrm-extensions-PedestrianLabel' );
+				carButton = this._createRadioButton ( this._routingButtonsDiv, 'Car', 'transitmode', 'lrm-extensions-CarButton', 'lrm-extensions-CarLabel' );
 
 				// The correct transit mode button is checked
 				switch ( this.options.transitMode ) {
 					case 'bike':
-						BikeButton.checked = true;
+						bikeButton.checked = true;
 						break;
 					case 'pedestrian':
-						PedestrianButton.checked = true;
+						pedestrianButton.checked = true;
 						break;
 					case 'car':
-						CarButton.checked = true;
+						carButton.checked = true;
 						break;
 					default:
-						CarButton.checked = true;
+						carButton.checked = true;
 						break;
 				}
 				
 				// event for the 'bike' button
 				L.DomEvent.on ( 
-					BikeButton, 
+					bikeButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm.options.transitMode = 'bike';
-						switch ( Lrm.options.provider ) {
-							case 'graphhopper':
-							Lrm.options.router.options.urlParameters.vehicle = 'bike';
-							break;
-							case 'mapzen':
-							Lrm.options.router.costing = 'bicycle';
-							Lrm.options.router.options.costing = 'bicycle';
-							break;
-							case 'mapbox':
-							Lrm.options.router.options.profile = 'mapbox/cycling';
-							break;
-						}
-						Lrm.route ( );
-						Lrm.fire ( 'transitmodechanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.transitMode = 'bike';
+							this.options.router.options.transitMode = 'bike';
+							this.route ( );
+							this.fire ( 'transitmodechanged' );
+						},
+						this
+					)
 				);
 				
 				// event for the 'pedestrian' button
 				L.DomEvent.on ( 
-					PedestrianButton, 
+					pedestrianButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm.options.transitMode = 'pedestrian';
-						switch ( Lrm.options.provider ) {
-							case 'graphhopper':
-							Lrm.options.router.options.urlParameters.vehicle = 'foot';
-							break;
-							case 'mapzen':
-							Lrm.options.router.costing = 'pedestrian';
-							Lrm.options.router.options.costing = 'pedestrian';
-							break;
-							case 'mapbox':
-							Lrm.options.router.options.profile = 'mapbox/walking';
-							break;
-						}
-						Lrm.route ( );
-						Lrm.fire ( 'transitmodechanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.transitMode = 'pedestrian';
+							this.options.router.options.transitMode = 'pedestrian';
+							this.route ( );
+							this.fire ( 'transitmodechanged' );
+						},
+						this
+					)
 				);
 				
 				// event for the 'car' button
 				L.DomEvent.on ( 
-					CarButton, 
+					carButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm.options.transitMode = 'car';
-						switch ( Lrm.options.provider ) {
-							case 'graphhopper':
-							Lrm.options.router.options.urlParameters.vehicle = 'car';
-							break;
-							case 'mapzen':
-							Lrm.options.router.costing = 'auto';
-							Lrm.options.router.options.costing = 'auto';
-							break;
-							case 'mapbox':
-							Lrm.options.router.options.profile = 'mapbox/driving';
-							break;
-						}
-						Lrm.route ( );
-						Lrm.fire ( 'transitmodechanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.transitMode = 'car';
+							this.options.router.options.transitMode = 'car';
+							this.route ( );
+							this.fire ( 'transitmodechanged' );
+						},
+						this
+					)
 				);
 			}
 
 			// Providers buttons are created
-			var GraphHopperButton;
-			var MapzenButton;
-			var MapboxButton;
+			var graphHopperButton;
+			var mapzenButton;
+			var mapboxButton;
 			if ( 0 < this.options.providerKeys.GraphHopper.length ) {
 				// GraphHopper button
-				GraphHopperButton = this._createRadioButton ( this._RoutingButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
+				graphHopperButton = this._createRadioButton ( this._routingButtonsDiv, 'GraphHopper', 'provider', 'lrm-extensions-GraphHopperButton', 'lrm-extensions-GraphHopperLabel');
 				// event for the GraphHopper button
 				L.DomEvent.on ( 
-					GraphHopperButton, 
+					graphHopperButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm._ProviderChange ( 'graphhopper' );
-						Lrm.fire ( 'providerchanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.provider = 'graphhopper';
+							this.options.router.options.provider = 'graphhopper';
+							this.route ( );
+							this.fire ( 'providerchanged' );
+						},
+						this
+					)
 				);
 			}
 			if ( 0 < this.options.providerKeys.Mapzen.length ) {
 				// Mapzen button
-				MapzenButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
+				mapzenButton = this._createRadioButton ( this._routingButtonsDiv, 'Mapzen', 'provider', 'lrm-extensions-MapzenButton', 'lrm-extensions-MapzenLabel');
 				// event for the Mapzen button
 				L.DomEvent.on ( 
-					MapzenButton, 
+					mapzenButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm._ProviderChange ( 'mapzen' );
-						Lrm.fire ( 'providerchanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.provider = 'mapzen';
+							this.options.router.options.provider = 'mapzen';
+							this.route ( );
+							this.fire ( 'providerchanged' );
+						},
+						this
+					)
 				);
 			}
 			if ( 0 < this.options.providerKeys.Mapbox.length ) {
 				// Mapbox button
-				MapboxButton = this._createRadioButton ( this._RoutingButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
+				mapboxButton = this._createRadioButton ( this._routingButtonsDiv, 'Mapbox', 'provider', 'lrm-extensions-MapboxButton', 'lrm-extensions-MapboxLabel');
 				// event for the Mapbox button
 				L.DomEvent.on ( 
-					MapboxButton, 
+					mapboxButton, 
 					'click', 
-					function ( event ) 
-					{ 
-						Lrm._ProviderChange ( 'mapbox' );
-						Lrm.fire ( 'providerchanged' );
-					}
+					L.bind (
+						function ( event ) 
+						{ 
+							this.options.provider = 'mapbox';
+							this.options.router.options.provider = 'mapbox';
+							this.route ( );
+							this.fire ( 'providerchanged' );
+						},
+						this
+					)
 				);
 			}
 
 			// The correct provider button is checked
 			switch ( this.options.provider ) {
 				case 'graphhopper':
-					if ( GraphHopperButton ) {
-						GraphHopperButton.checked = true;
+					if ( graphHopperButton ) {
+						graphHopperButton.checked = true;
 					}
 					break;
 				case 'mapzen':
-					if ( MapzenButton ) {
-						MapzenButton.checked = true;
+					if ( mapzenButton ) {
+						mapzenButton.checked = true;
 					}
 					break;
 				case 'mapbox':
-					if ( MapboxButton ) {
-						MapboxButton.checked = true;
+					if ( mapboxButton ) {
+						mapboxButton.checked = true;
 					}
 					break;
 			}
 			
 			// the GPX button is created
-			var GpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._ServicesButtonsDiv );
-			GpxAnchor.id = 'downloadGpx';
-			GpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
-			GpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+			var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
+			gpxAnchor.id = 'downloadGpx';
+			gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
+			gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
 
 			// the polyline button is created
-			var RouteToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._ServicesButtonsDiv );
-			RouteToLineButton.id = 'lrm-extensions-RouteToLineButton';
+			var routeToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
+			routeToLineButton.id = 'lrm-extensions-RouteToLineButton';
 
 			// event for the polyline button
-			var LineOptions = {
-				color : '#ff0000',
-				width : 5,
-				clear : false,
-				name : ''
-			};
 			L.DomEvent.on ( 
-				RouteToLineButton, 
+				routeToLineButton, 
 				'click', 
-				function ( event ) 
-				{ 
-					if ( Lrm._GpxRoute && Lrm._GpxRoute.name && 0 < Lrm._GpxRoute.name.length ) {
-						LineOptions.name = Lrm._GpxRoute.name;
-					}
-					else {
-						LineOptions.name = '';
-					}
-						
-					if ( typeof module !== 'undefined' && module.exports ) {
-						LineOptions = require ('./L.Routing.Extensions.Dialogs' )( LineOptions, Lrm._map, Lrm );
-					}
-					else {
-						LineOptions = polylineDialog ( LineOptions, Lrm._map, Lrm );
-					}
-				}
+				L.bind (
+					function ( event ) 
+					{ 
+						var lineOptions = { color : '#ff0000', width : 5, clear : false, name : '' };
+						if ( this._gpxRoute && this._gpxRoute.name && 0 < this._gpxRoute.name.length ) {
+							lineOptions.name = this._gpxRoute.name;
+						}
+						else {
+							lineOptions.name = '';
+						}
+							
+						if ( typeof module !== 'undefined' && module.exports ) {
+							lineOptions = require ('./L.Routing.Extensions.Dialogs' )( lineOptions, this._map, this );
+						}
+						else {
+							lineOptions = polylineDialog ( lineOptions, this._map, this );
+						}
+					},
+					this
+				)
 			);
 
 			// buttons are added to the control
-			Container.insertBefore( this._RoutingButtonsDiv, Container.firstChild);
-			Container.insertBefore( this._ServicesButtonsDiv, Container.firstChild);
+			container.insertBefore( this._routingButtonsDiv, container.firstChild);
+			container.insertBefore( this._servicesButtonsDiv, container.firstChild);
 
 			// the layer group for the polyline is added to the map
-			this._RoutePolylines.addTo ( map );
+			this._routePolylines.addTo ( map );
 			
-			return Container;
+			return container;
 		},
 		
 		/*
@@ -393,8 +388,8 @@ Tests to do...
 		*/
 
 		RouteToLine  : function ( options ) {
-			if ( this._GpxRoute && this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length ) {
-				var polyline = L.polyline ( this._GpxRoute.coordinates, { color : options.color, weight : options.width } );	
+			if ( this._gpxRoute && this._gpxRoute.coordinates && 0 < this._gpxRoute.coordinates.length ) {
+				var polyline = L.polyline ( this._gpxRoute.coordinates, { color : options.color, weight : options.width } );	
 				if ( 0 < options.name.length ) {
 					polyline.bindTooltip ( options.name );
 				}
@@ -427,7 +422,7 @@ Tests to do...
 					}
 				);
 				
-				this._RoutePolylines.addLayer ( polyline );
+				this._routePolylines.addLayer ( polyline );
 				
 				
 				
@@ -467,7 +462,7 @@ Tests to do...
 				}
 			);
 			
-			this._RoutePolylines.addLayer ( polyline );
+			this._routePolylines.addLayer ( polyline );
 		
 		},
 		
@@ -478,7 +473,7 @@ Tests to do...
 		*/
 		
 		getRoutePolylines : function ( ) {
-			return this._RoutePolylines;
+			return this._routePolylines;
 		},
 		
 		/*
@@ -489,8 +484,8 @@ Tests to do...
 		
 		show : function ( ) {
 			L.Routing.Control.prototype.show.call ( this );
-			this._RoutingButtonsDiv.setAttribute ( "style" , "display: block" );
-			this._ServicesButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._routingButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._servicesButtonsDiv.setAttribute ( "style" , "display: block" );
 		},
 		
 		/*
@@ -501,8 +496,8 @@ Tests to do...
 		
 		hide : function ( ) {
 			L.Routing.Control.prototype.hide.call ( this );
-			this._RoutingButtonsDiv.setAttribute ( "style" , "display: none" );
-			this._ServicesButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._routingButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._servicesButtonsDiv.setAttribute ( "style" , "display: none" );
 		},
 
 		/*
@@ -514,7 +509,7 @@ Tests to do...
 		_updateLines: function ( routes ) {
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			// route is saved for the GPX and polyline
-			this._GpxRoute = routes.route;
+			this._gpxRoute = routes.route;
 			
 			// GPX file
 			this._prepareGpxLink ( );
@@ -616,15 +611,15 @@ Tests to do...
 				GPXString = "<?xml version='1.0'?>" + Tab0;
 			}
 			GPXString += "<gpx xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xsi:schemaLocation='http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd' version='1.1' creator='Leaflet-Routing-Gpx'>";
-			if ( this._GpxRoute ) {
+			if ( this._gpxRoute ) {
 				var Counter = 0;
-				if ( this._GpxRoute.waypoints && options.GpxWaypoints ) {
-					for ( Counter = 0; Counter < this._GpxRoute.waypoints.length; Counter ++ ) {
+				if ( this._gpxRoute.waypoints && options.GpxWaypoints ) {
+					for ( Counter = 0; Counter < this._gpxRoute.waypoints.length; Counter ++ ) {
 						GPXString += 
 							Tab1 + "<wpt lat='" + 
-							this._GpxRoute.waypoints [ Counter ].latLng.lat +
+							this._gpxRoute.waypoints [ Counter ].latLng.lat +
 							"' lon='" +
-							this._GpxRoute.waypoints [ Counter ].latLng.lng +
+							this._gpxRoute.waypoints [ Counter ].latLng.lng +
 							"' " +
 							TimeStamp +
 							"name='" +
@@ -632,29 +627,29 @@ Tests to do...
 							"' />";
 					}
 				}
-				if ( this._GpxRoute.coordinates && 0 < this._GpxRoute.coordinates.length  ) {
+				if ( this._gpxRoute.coordinates && 0 < this._gpxRoute.coordinates.length  ) {
 					if ( options.gpxRoute  ) {
 						GPXString += Tab1 + "<rte>";
-						if ( this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
-							for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
+						if ( this._gpxRoute.instructions && 0 < this._gpxRoute.instructions.length ) {
+							for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ ) {
 								GPXString +=
 									Tab2 + "<rtept lat='" + 
 									( 
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ].lat ? 
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ].lat : 
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ][ 0 ] ) +
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lat ? 
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lat : 
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ][ 0 ] ) +
 									"' lon='" +
 									(
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ].lng ?
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ].lng :
-										this._GpxRoute.coordinates [ this._GpxRoute.instructions [ Counter ].index ][ 1 ] ) +
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lng ?
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lng :
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ][ 1 ] ) +
 									"' " +
 									TimeStamp +
 									"name='" +
 									Counter +
 									"' " +
 									"desc='" +
-									this._toXmlString ( this._formatter.formatInstruction ( this._GpxRoute.instructions [ Counter ] ) )  +
+									this._toXmlString ( this._formatter.formatInstruction ( this._gpxRoute.instructions [ Counter ] ) )  +
 									"' />" ;
 							}
 						}
@@ -664,12 +659,12 @@ Tests to do...
 					if ( options.GpxTrack ) {
 						GPXString += Tab1 + "<trk>";
 						GPXString += Tab2 + "<trkseg>";
-						for ( Counter = 0; Counter < this._GpxRoute.coordinates.length; Counter ++ ) {
+						for ( Counter = 0; Counter < this._gpxRoute.coordinates.length; Counter ++ ) {
 							GPXString +=
 								Tab3 + "<trkpt lat='" + 
-								( this._GpxRoute.coordinates [ Counter ].lat ? this._GpxRoute.coordinates [ Counter ].lat : this._GpxRoute.coordinates [ Counter ][ 0 ] ) +
+								( this._gpxRoute.coordinates [ Counter ].lat ? this._gpxRoute.coordinates [ Counter ].lat : this._gpxRoute.coordinates [ Counter ][ 0 ] ) +
 								"' lon='" +
-								( this._GpxRoute.coordinates [ Counter ].lng ? this._GpxRoute.coordinates [ Counter ].lng : this._GpxRoute.coordinates [ Counter ][ 1 ] ) +
+								( this._gpxRoute.coordinates [ Counter ].lng ? this._gpxRoute.coordinates [ Counter ].lng : this._gpxRoute.coordinates [ Counter ][ 1 ] ) +
 								"' " +
 								TimeStamp +
 								"name='" +
@@ -711,14 +706,14 @@ Tests to do...
 			RouteElement.id = options.RouteElementId;
 			RouteElement.innerHTML = options.RouteHeader;
 				
-			if ( this._GpxRoute && this._GpxRoute.instructions && 0 < this._GpxRoute.instructions.length ) {
+			if ( this._gpxRoute && this._gpxRoute.instructions && 0 < this._gpxRoute.instructions.length ) {
 				var SummaryElement = document.createElement ( 'div' );
 				RouteElement.appendChild ( SummaryElement );
 				SummaryElement.outerHTML = L.Util.template (
 					options.RouteSummaryTemplate,
 					{
-						'Distance' : this._formatter.formatDistance ( this._GpxRoute.summary.totalDistance ),
-						'Time' : this._formatter.formatTime ( this._GpxRoute.summary.totalTime )
+						'Distance' : this._formatter.formatDistance ( this._gpxRoute.summary.totalDistance ),
+						'Time' : this._formatter.formatTime ( this._gpxRoute.summary.totalTime )
 					}
 				);
 				var Counter = 0;
@@ -726,26 +721,26 @@ Tests to do...
 				// mapzen : instructions.instruction
 				// graphhopper & OSRM: instructions.text
 				
-				for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ ) {
+				for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ ) {
 					switch ( this.options.provider ) {
 						case 'graphhopper':
 							// GraphHopper text
-							if ( this._GpxRoute.instructions [ Counter ].text ) {
+							if ( this._gpxRoute.instructions [ Counter ].text ) {
 								var TextInstructionElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( TextInstructionElement );
 								TextInstructionElement.outerHTML = L.Util.template (
 									options.RouteTextInstructionTemplate,
 									{
-										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].text )
+										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._gpxRoute.instructions [ Counter ].text )
 									}
 								);
-								if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
+								if ( 0 < this._gpxRoute.instructions [ Counter ].distance ) {
 									var NextDistanceElement = document.createElement ( 'div' );
 									RouteElement.appendChild ( NextDistanceElement );
 									NextDistanceElement.outerHTML = L.Util.template (
 										options.RouteNextDistanceTemplate,
 										{
-											'NextDistance' : this._formatter.formatDistance ( Math.round ( this._GpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
+											'NextDistance' : this._formatter.formatDistance ( Math.round ( this._gpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
 										}
 									);
 								}
@@ -753,24 +748,24 @@ Tests to do...
 							break;
 						case 'mapzen':
 							// Mapzen pre-instruction
-							if ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
+							if ( this._gpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
 								var PreInstructionElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( PreInstructionElement );
 								PreInstructionElement.outerHTML = L.Util.template (
 									options.RoutePreInstructionTemplate,
 									{
-										'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
+										'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._gpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
 									}
 								);
 							}
 							//Mapzen post-instruction
-							if ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
+							if ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
 								var PostInstructionElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( PostInstructionElement );
 								PostInstructionElement.outerHTML = L.Util.template (
 									options.RoutePostInstructionTemplate,
 									{
-										'PostInstruction' : this._toXmlString ( this._GpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
+										'PostInstruction' : this._toXmlString ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
 									}
 								);
 							}
@@ -782,16 +777,16 @@ Tests to do...
 							MapboxTextInstructionElement.outerHTML = L.Util.template (
 									options.RouteTextInstructionTemplate,
 									{
-										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._formatter.formatInstruction ( this._GpxRoute.instructions [ Counter ] )
+										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._formatter.formatInstruction ( this._gpxRoute.instructions [ Counter ] )
 									}
 								);
-							if ( 0 < this._GpxRoute.instructions [ Counter ].distance ) {
+							if ( 0 < this._gpxRoute.instructions [ Counter ].distance ) {
 								var MapboxNextDistanceElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( MapboxNextDistanceElement );
 								MapboxNextDistanceElement.outerHTML = L.Util.template (
 									options.RouteNextDistanceTemplate,
 									{
-										'NextDistance' : this._formatter.formatDistance ( Math.round ( this._GpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
+										'NextDistance' : this._formatter.formatDistance ( Math.round ( this._gpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
 									}
 								);
 							}
@@ -809,8 +804,8 @@ Tests to do...
 							}
 						);
 					}
-					CumDistance += this._GpxRoute.instructions [ Counter ].distance;
-				} // end for ( Counter = 0; Counter < this._GpxRoute.instructions.length; Counter++ )
+					CumDistance += this._gpxRoute.instructions [ Counter ].distance;
+				} // end for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ )
 			}
 			return RouteElement;
 		},
