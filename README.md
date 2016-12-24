@@ -1,7 +1,7 @@
 # lrm-extensions
 
 Warning : this plugin is under development. Unstable version!
-
+<!---
 lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can export to a GPS the route created with leaflet-routing-machine.
 The plugin work with leaflet-routing-machine and with lrm-mapzen (and perhaps also with others lrm plugin, but not tested... :-( ).
 See the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
@@ -65,3 +65,4 @@ Possible values for options:
 ### gpxchanged event
 
 This event is fired each time the route is modified.
+-->
