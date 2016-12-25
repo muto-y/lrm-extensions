@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 		browserify: {
 			control: {
 				src: ['src/L.Routing.Extensions.js'],
-				dest: '../maps/dist/lrm-extensions/lrm-extensions.js'
+				dest: 'dist/lrm-extensions.js'
 			}
 		},
 		uglify: {
@@ -19,7 +19,7 @@ module.exports = function(grunt) {
 			},
 			build: {
 				src: 'dist/lrm-extensions.js',
-				dest: '../maps/dist/lrm-extensions/lrm-extensions.min.js'
+				dest: 'dist/lrm-extensions.min.js'
 			}
 		}
 	});
