@@ -30,8 +30,6 @@ Tests to do...
 (function() {
 	'use strict';
 
-	var	polyline = require('polyline');
-
 	/*
 	--- L.Routing.Extensions.GraphHopperConverter object ---------------------------------------------------------------
 	------------------------------------------------------------------------------------------------------------------------
@@ -46,8 +44,6 @@ Tests to do...
 
 		initialize: function ( options ) {
 			L.Util.setOptions( this, options );
-			console.log ( 'L.Routing.Extensions.GraphHopperConverter' );
-			console.log ( options );
 		},
 		
 		/*
@@ -66,17 +62,17 @@ Tests to do...
 
 				routes.push (
 					{
-						name: '',
-						coordinates: coordinates,
-						instructions: this._convertInstructions(path.instructions),
-						summary: {
+						name : '',
+						coordinates : coordinates,
+						instructions : this._convertInstructions(path.instructions),
+						summary : {
 							totalDistance: path.distance,
 							totalTime: path.time / 1000,
 						},
-						inputWaypoints: inputWaypoints,
+						inputWaypoints : inputWaypoints,
 						waypoints : mappedWaypoints.waypoints, // added wwwouaiebe
-						actualWaypoints: mappedWaypoints.waypoints,
-						waypointIndices: mappedWaypoints.waypointIndices
+						actualWaypoints : mappedWaypoints.waypoints,
+						waypointIndices : mappedWaypoints.waypointIndices
 					}
 				);
 			}
@@ -85,38 +81,43 @@ Tests to do...
 		},
 		
 		/*
-		--- _decodePolyline method ---------------------------------------------------------------------------------------------
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_decodePolyline: function(geometry) {
-			var coords = polyline.decode(geometry, 5),
-				latlngs = new Array(coords.length),
-				i;
-			for (i = 0; i < coords.length; i++) {
-				latlngs[i] = new L.LatLng(coords[i][0], coords[i][1]);
-			}
-
-			return latlngs;
-		},
-
-		/*
 		--- _toWaypoints method ------------------------------------------------------------------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_toWaypoints: function(inputWaypoints, vias) {
-			var wps = [],
-			    i;
-			for (i = 0; i < vias.length; i++) {
-				wps.push({
-					latLng: L.latLng(vias[i]),
-					name: inputWaypoints[i].name,
-					options: inputWaypoints[i].options
-				});
+		_toWaypoints : function ( inputWaypoints, responseWaypoints ) {
+
+		var wayPoints = [ ];
+		
+			for ( var counter = 0; counter < responseWaypoints.length; counter ++ ) {
+				wayPoints.push (
+					{
+						latLng: L.latLng ( responseWaypoints [ counter ] ),
+						name: inputWaypoints [ counter ].name,
+						options: inputWaypoints [ counter ].options
+					}
+				);
 			}
 
-			return wps;
+			return wayPoints;
+		},
+
+		/*
+		--- _decodePolyline method ---------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		_decodePolyline: function ( routeGeometry ) {
+
+		var	polyline = require ( 'polyline' );
+			
+			var coordinates = polyline.decode ( routeGeometry, 5 );
+			var result = new Array ( coordinates.length );
+
+			for ( var coordCounter = 0; coordCounter < coordinates.length; coordCounter ++ ) {
+				result [ coordCounter ] = L.latLng ( coordinates [ coordCounter ][ 0 ], coordinates [ coordCounter ][ 1 ]);
+			}
+
+			return result;
 		},
 
 		/*
@@ -124,7 +125,8 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_convertInstructions: function(instructions) {
+		_convertInstructions : function ( instructions ) {
+			
 			var signToType = {
 					'-3': 'SharpLeft',
 					'-2': 'Left',
@@ -136,21 +138,21 @@ Tests to do...
 					4: 'DestinationReached',
 					5: 'WaypointReached',
 					6: 'Roundabout'
-				},
-				result = [],
-			    i,
-			    instr;
+				};
+			var	result = [ ];
 
-			for (i = 0; instructions && i < instructions.length; i++) {
-				instr = instructions[i];
-				result.push({
-					type: signToType[instr.sign],
-					text: instr.text,
-					distance: instr.distance,
-					time: instr.time / 1000,
-					index: instr.interval[0],
-					exit: instr.exit_number
-				});
+			for ( var instrCounter = 0; instructions && instrCounter < instructions.length; instrCounter ++) {
+				var instruction = instructions [ instrCounter ];
+				result.push (
+					{
+						type : signToType [ instruction.sign ],
+						text : instruction.text,
+						distance : instruction.distance,
+						time : instruction.time / 1000,
+						index : instruction.interval[0],
+						exit : instruction.exit_number
+					}
+				);
 			}
 
 			return result;
@@ -161,35 +163,38 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_mapWaypointIndices: function(waypoints, instructions, coordinates) {
-			var wps = [],
-				wpIndices = [],
-			    i,
-			    idx;
+		_mapWaypointIndices: function ( waypoints, instructions, coordinates ) {
+			var tmpWaypoints = [ ];
+			var wpIndices = [ ];
+			var idx;
 
-			wpIndices.push(0);
-			wps.push(new L.Routing.Waypoint(coordinates[0], waypoints[0].name));
+			wpIndices.push ( 0 );
+			tmpWaypoints.push ( L.Routing.waypoint ( coordinates [ 0 ], waypoints [ 0 ].name ) );
 
-			for (i = 0; instructions && i < instructions.length; i++) {
-				if (instructions[i].sign === 5) { // VIA_REACHED
-					idx = instructions[i].interval[0];
-					wpIndices.push(idx);
-					wps.push({
-						latLng: coordinates[idx],
-						name: waypoints[wps.length + 1].name
-					});
+			for ( var instrCounter = 0; instructions && instrCounter < instructions.length; instrCounter ++ ) {
+				if ( instructions [ instrCounter ].sign === 5) { // WaypointReached
+					idx = instructions [ instrCounter ].interval[0];
+					wpIndices.push ( idx );
+					tmpWaypoints.push (
+						{
+							latLng: coordinates[idx],
+							name: waypoints[tmpWaypoints.length + 1].name
+						}
+					);
 				}
 			}
 
-			wpIndices.push(coordinates.length - 1);
-			wps.push({
-				latLng: coordinates[coordinates.length - 1],
-				name: waypoints[waypoints.length - 1].name
-			});
+			wpIndices.push ( coordinates.length - 1 );
+			tmpWaypoints.push ( 
+				{
+					latLng: coordinates[coordinates.length - 1],
+					name: waypoints[waypoints.length - 1].name
+				}
+			);
 
 			return {
 				waypointIndices: wpIndices,
-				waypoints: wps
+				waypoints: tmpWaypoints
 			};
 		}		
 	} );

@@ -46,8 +46,6 @@ Tests to do...
 
 		initialize: function ( options ) {
 			L.Util.setOptions( this, options );
-			console.log ( 'L.Routing.Extensions.MapzenRouteConverter' );
-			console.log ( options );
 		},
 		
 		/*

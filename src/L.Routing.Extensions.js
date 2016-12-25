@@ -62,7 +62,7 @@ Tests to do...
 		Constructor
 		------------------------------------------------------------------------------------------------------------------------
 		*/
-			
+		
 		initialize: function ( options ) {
 
 			// options are verified...
@@ -116,6 +116,11 @@ Tests to do...
 			// the transit mode is set to 'car' when the provider is 'osrm'
 			if ( 'osrm' === options.provider ) {
 				options.transitMode = 'car';		
+			}
+			
+			require ( './L.Routing.Extensions.MapzenFormatter' );
+			if ( 'mapzen' === options.provider ) {
+				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
 			}	
 
 			var routerOptions = {
@@ -270,6 +275,7 @@ Tests to do...
 						{ 
 							this.options.provider = 'graphhopper';
 							this.options.router.options.provider = 'graphhopper';
+							this._formatter = new L.Routing.Formatter ( );
 							this.route ( );
 							this.fire ( 'providerchanged' );
 						},
@@ -289,6 +295,8 @@ Tests to do...
 						{ 
 							this.options.provider = 'mapzen';
 							this.options.router.options.provider = 'mapzen';
+							require ( './L.Routing.Extensions.MapzenFormatter' );
+							this._formatter = L.Routing.Extensions.mapzenFormatter ( );
 							this.route ( );
 							this.fire ( 'providerchanged' );
 						},
@@ -308,6 +316,7 @@ Tests to do...
 						{ 
 							this.options.provider = 'mapbox';
 							this.options.router.options.provider = 'mapbox';
+							this._formatter = new L.Routing.Formatter ( );
 							this.route ( );
 							this.fire ( 'providerchanged' );
 						},

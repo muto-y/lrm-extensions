@@ -44,8 +44,6 @@ Tests to do...
 
 		initialize: function ( options ) {
 			L.Util.setOptions( this, options );
-			console.log ( 'L.Routing.Extensions.MapboxOsrmRouteConverter' );
-			console.log ( options );
 		},
 
 		/*
@@ -154,10 +152,12 @@ Tests to do...
 		*/
 
 		_toWaypoints : function ( inputWaypoints, responseWaypoints ) {
+			
 			var wayPoints = [];
-			for ( var counter = 0; counter < responseWaypoints.length; counter++ ) {
+			
+			for ( var counter = 0; counter < responseWaypoints.length; counter ++ ) {
 				wayPoints.push ( 
-					new L.Routing.Waypoint ( 
+					L.Routing.waypoint ( 
 						L.latLng ( responseWaypoints [ counter ].location [ 1 ], responseWaypoints [ counter].location [ 0 ] ),
 						inputWaypoints [ counter ].name,
 						inputWaypoints [ counter ].options
@@ -180,7 +180,7 @@ Tests to do...
 			var coordinates = polyline.decode ( routeGeometry, this.options.polylinePrecision );
 			var result = new Array ( coordinates.length );
 			
-			for ( var coordCounter = coordinates.length - 1; coordCounter >= 0; coordCounter --) {
+			for ( var coordCounter = coordinates.length - 1; coordCounter >= 0; coordCounter -- ) {
 				result [ coordCounter ] = L.latLng ( coordinates [ coordCounter ] );
 			}
 
