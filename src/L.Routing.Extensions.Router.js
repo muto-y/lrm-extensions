@@ -187,9 +187,36 @@ Tests to do...
 
 			// tmp // this._saveHintData( response.waypoints, inputWaypoints );
 
-			callback.call( context, null, routes );
+			callback.call ( context, null, routes );
 		},
 		
+		/*
+		--- _routeDoneGraphHopper method ----------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_routeDoneGraphHopper : function ( response, inputWaypoints, options, callback, context ) {
+
+
+			context = context || callback;
+			if ( response.info.errors && 0 < response.info.errors.length ) {
+				callback.call(
+					context,
+					{
+						// TODO: include all errors
+						status : response.info.errors[0].details,
+						message : response.info.errors[0].message
+					}
+				);
+				return;
+			}
+
+			var graphHopperRouteConverter = require ( './L.Routing.Extensions.GraphHopperRouteConverter' ) ( this.options ) ;
+			var routes = graphHopperRouteConverter.createRoutes ( response, inputWaypoints, options );
+
+			callback.call( context, null, routes );
+		},
+
 		/*
 		--- _routeDoneMapzen method --------------------------------------------------------------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
