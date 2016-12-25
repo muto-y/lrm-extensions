@@ -30,6 +30,10 @@ Tests to do...
 (function() {
 	'use strict';
 
+	var corslite = require('corslite');
+	var	polyline = require('polyline');
+	var osrmTextInstructions = require('osrm-text-instructions');
+
 	L.Routing.Extensions.Router = L.Class.extend ( {	
 	
 		options: {
@@ -72,26 +76,20 @@ Tests to do...
 
 		route: function ( waypoints, callback, context, options ) {
 
-			var timedOut = false;
-			var	wps = [];
-			var	url;
-			var	timer;
-			var	wp;
-			var	i;
-			var	xhr;
-
 			options = L.extend ( { }, this.options.routingOptions, options);
-			url = this.buildRouteUrl ( waypoints, options );
 			
+			var url = this.buildRouteUrl ( waypoints, options );
 			console.log ( url );
+			
+			var timedOut = false;
+			var	timer;
 
-			/* tmp
 			timer = setTimeout ( 
 				function ( ) {
 					timedOut = true;
 					callback.call ( context || callback, {
 						status: -1,
-						message: 'OSRM request timed out.'
+						message: this.options.provider + ' request timed out.'
 					} );
 				}, 
 				this.options.timeout
@@ -100,12 +98,15 @@ Tests to do...
 			// Create a copy of the waypoints, since they
 			// might otherwise be asynchronously modified while
 			// the request is being processed.
-			for ( i = 0; i < waypoints.length; i++) {
-				wp = waypoints [ i ];
-				wps.push ( new Waypoint ( wp.latLng, wp.name, wp.options ) );
+			var	tmpWaypoints = [];
+			var	tmpWaypoint;
+			for ( var counter = 0; counter < waypoints.length; counter++ ) {
+				tmpWaypoint = waypoints [ counter ];
+				tmpWaypoints.push ( new L.Routing.Waypoint ( tmpWaypoint.latLng, tmpWaypoint.name, tmpWaypoint.options ) );
 			}
 
-			return xhr = corslite ( 
+			var	xhr;
+			xhr = corslite ( 
 				url, 
 				L.bind (
 					function ( err, resp ) {
@@ -119,7 +120,7 @@ Tests to do...
 								try {
 									data = JSON.parse ( resp.responseText );
 									try {
-										return this._routeDone( data, wps, options, callback, context );
+										return this._routeDone( data, tmpWaypoints, options, callback, context );
 									} 
 									catch ( ex ) {
 										error.status = -3;
@@ -149,9 +150,214 @@ Tests to do...
 					this 
 				)
 			);
-			
-			*/
+			return xhr;
 		},
+
+		_routeDoneMapboxOsrm : function ( response, inputWaypoints, options, callback, context ) {
+			console.log ( JSON.stringify ( response ) );
+
+			context = context || callback;
+			if ( response.code !== 'Ok' ) {
+				callback.call ( 
+					context, 
+					{
+						status: response.code
+					}
+				);
+				return;
+			}
+
+			var routes = [];
+			var route;
+			for ( var counter = 0; counter < response.routes.length; counter++) {
+				route = this._convertRouteMapboxOsrm ( response.routes [ counter ] );
+				route.inputWaypoints = inputWaypoints;
+				route.waypoints = this._toWaypointsMapboxOsrm ( inputWaypoints, response.waypoints );
+				route.properties = { isSimplified: ! options || !options.geometryOnly || options.simplifyGeometry };
+				routes.push ( route );
+			}
+
+			// tmp // this._saveHintData( response.waypoints, inputWaypoints );
+
+			callback.call( context, null, routes );
+		},
+		
+		_toWaypointsMapboxOsrm : function ( inputWaypoints, responseWaypoints ) {
+			var tmpWayPoints = [];
+			for ( var counter = 0; counter < responseWaypoints.length; counter++ ) {
+				tmpWayPoints.push ( 
+					new L.Routing.Waypoint ( 
+						L.latLng ( responseWaypoints [ counter ].location [ 1 ], responseWaypoints [ counter].location [ 0 ] ),
+						inputWaypoints [ counter ].name,
+						inputWaypoints [ counter ].options
+					)
+				);
+			}
+
+			return tmpWayPoints;
+		},
+		
+		_convertRouteMapboxOsrm : function ( responseRoute ) {
+			var result = {
+					name: '',
+					coordinates: [],
+					instructions: [],
+					summary: {
+						totalDistance: responseRoute.distance,
+						totalTime: responseRoute.duration
+					}
+				};
+			var	legNames = [],
+				waypointIndices = [],
+				index = 0,
+				legCount = responseRoute.legs.length,
+				hasSteps = responseRoute.legs[0].steps.length > 0,
+				i,
+				j,
+				leg,
+				step,
+				geometry,
+				type,
+				modifier,
+				text,
+				stepToText;
+
+			if (this.options.stepToText) {
+				stepToText = this.options.stepToText;
+			} else {
+				var textInstructions = osrmTextInstructions('v5', this.options.language);
+				stepToText = textInstructions.compile.bind(textInstructions);
+			}
+			for (i = 0; i < legCount; i++) {
+				leg = responseRoute.legs[i];
+				legNames.push(leg.summary && leg.summary.charAt(0).toUpperCase() + leg.summary.substring(1));
+
+				for (j = 0; j < leg.steps.length; j++) {
+					step = leg.steps[j];
+					geometry = this._decodePolyline(step.geometry);
+					result.coordinates.push.apply(result.coordinates, geometry);
+					type = this._maneuverToInstructionType(step.maneuver, i === legCount - 1);
+					modifier = this._maneuverToModifier(step.maneuver);
+					text = stepToText(step);
+
+					if (type) {
+						if ((i === 0 && step.maneuver.type === 'depart') || step.maneuver.type === 'arrive') {
+							waypointIndices.push(index);
+						}
+
+						result.instructions.push({
+							type: type,
+							distance: step.distance,
+							time: step.duration,
+							road: step.name,
+							direction: this._bearingToDirection(step.maneuver.bearing_after),
+							exit: step.maneuver.exit,
+							index: index,
+							mode: step.mode,
+							modifier: modifier,
+							text: text
+						});
+					}
+
+					index += geometry.length;
+				}
+
+			}
+
+			result.name = legNames.join(', ');
+			if (!hasSteps) {
+				result.coordinates = this._decodePolyline(responseRoute.geometry);
+			} else {
+				result.waypointIndices = waypointIndices;
+			}
+
+			return result;
+		},
+
+		_decodePolyline: function(routeGeometry) {
+			var cs = polyline.decode(routeGeometry, this.options.polylinePrecision),
+				result = new Array(cs.length),
+				i;
+			for (i = cs.length - 1; i >= 0; i--) {
+				result[i] = L.latLng(cs[i]);
+			}
+
+			return result;
+		},
+
+		_bearingToDirection: function(bearing) {
+			var oct = Math.round(bearing / 45) % 8;
+			return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][oct];
+		},
+		
+		_maneuverToInstructionType: function(maneuver, lastLeg) {
+			switch (maneuver.type) {
+			case 'new name':
+				return 'Continue';
+			case 'depart':
+				return 'Head';
+			case 'arrive':
+				return lastLeg ? 'DestinationReached' : 'WaypointReached';
+			case 'roundabout':
+			case 'rotary':
+				return 'Roundabout';
+			case 'merge':
+			case 'fork':
+			case 'on ramp':
+			case 'off ramp':
+			case 'end of road':
+				return this._camelCase(maneuver.type);
+			// These are all reduced to the same instruction in the current model
+			//case 'turn':
+			//case 'ramp': // deprecated in v5.1
+			default:
+				return this._camelCase(maneuver.modifier);
+			}
+		},
+		_maneuverToModifier: function(maneuver) {
+			var modifier = maneuver.modifier;
+
+			switch (maneuver.type) {
+			case 'merge':
+			case 'fork':
+			case 'on ramp':
+			case 'off ramp':
+			case 'end of road':
+				modifier = this._leftOrRight(modifier);
+			}
+
+			return modifier && this._camelCase(modifier);
+		},
+
+		_camelCase: function(s) {
+			var words = s.split(' '),
+				result = '';
+			for (var i = 0, l = words.length; i < l; i++) {
+				result += words[i].charAt(0).toUpperCase() + words[i].substring(1);
+			}
+
+			return result;
+		},
+
+		_leftOrRight: function(d) {
+			return d.indexOf('left') >= 0 ? 'Left' : 'Right';
+		},
+		
+		_routeDone : function ( response, inputWaypoints, options, callback, context )	 {
+			switch ( this.options.provider ) {
+				case 'graphhopper':
+					return this._routeDoneGraphHopper ( response, inputWaypoints, options, callback, context );
+				case 'mapbox':
+					return this._routeDoneMapboxOsrm ( response, inputWaypoints, options, callback, context );
+				case 'mapzen':
+					return this._routeDoneMapzen ( response, inputWaypoints, options, callback, context );
+				case 'osrm':
+					return this._routeDoneMapboxOsrm ( response, inputWaypoints, options, callback, context );
+				default:
+					break;
+			}
+		},
+		
 		_buildRouteUrlGraphHopper : function ( waypoints, options) {
 			
 			var vehicle;
@@ -173,11 +379,10 @@ Tests to do...
 				}
 			}
 			
-			var	locations = [],
-				baseUrl;
+			var	locations = [];
 
-			for (var i = 0; i < waypoints.length; i++) {
-				locations.push('point=' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
+			for ( var counter = 0; counter < waypoints.length; counter++ ) {
+				locations.push ( 'point=' + waypoints [ counter ].latLng.lat + ',' + waypoints [ counter ].latLng.lng );
 			}
 
 			return 'https://graphhopper.com/api/1/route' + 
@@ -305,6 +510,8 @@ Tests to do...
 				case 'graphhopper':
 					return this._buildRouteUrlGraphHopper ( waypoints, options );
 				case 'mapbox':
+					var converter = require ( './L.Routing.Extensions.MapboxOsrmRouteConverter' ) ;
+					converter ( this.options ) ;
 					return this._buildRouteUrlMapboxOsrm ( waypoints, options );
 				case 'mapzen':
 					return this._buildRouteUrlMapzen ( waypoints, options );
