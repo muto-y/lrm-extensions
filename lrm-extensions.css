@@ -85,7 +85,6 @@ div.cyPolylineDialogInputDiv > div > input
 {
 	width: 4em;
 }
-
 .cyPolylineDialogButtonsDiv
 {
 	text-align: center;
@@ -96,13 +95,11 @@ div.cyPolylineDialogInputDiv > div > input
 {
 	width: 6em;
 }
-
-/* control */
-
-html > body > div#cyMap.leaflet-container.leaflet-fade-anim.leaflet-grab.leaflet-touch-drag > div.leaflet-control-container > div.leaflet-top.leaflet-right > div.leaflet-routing-container.leaflet-bar.leaflet-routing-collapsible.leaflet-control > form.lrm-extensions-ServiceButtons > a#downloadGpx.lrm-extensions-ServicesAnchor
+a#downloadGpx
 {
 	display: inline;
-	text-decoration: none !important;
+	text-decoration: none;
+	border-bottom-style: none;
 }
 .lrm-extensions-ServicesButton,
 .lrm-extensions-Label
