@@ -101,6 +101,10 @@ a#downloadGpx
 	text-decoration: none;
 	border-bottom-style: none;
 }
+a#downloadGpx:hover
+{
+	background-color: white;
+}
 .lrm-extensions-ServicesButton,
 .lrm-extensions-Label
 {
