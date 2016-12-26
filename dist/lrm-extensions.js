@@ -4248,11 +4248,6 @@ Tests to do...
 				options.transitMode = 'car';		
 			}
 			
-			require ( './L.Routing.Extensions.MapzenFormatter' );
-			if ( 'mapzen' === options.provider ) {
-				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
-			}	
-
 			// the user don't gives a default provider, but a provider key is filled
 			if ( 'osrm' === options.provider && 0 < options.providerKeys.Mapbox.length ) {
 				options.provider = 'mapbox';
@@ -4261,6 +4256,11 @@ Tests to do...
 			} else if ( 'osrm' === options.provider && 0 < options.providerKeys.GraphHopper.length ) {
 				options.provider = 'graphhopper';
 			}
+			
+			require ( './L.Routing.Extensions.MapzenFormatter' );
+			if ( 'mapzen' === options.provider ) {
+				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
+			}	
 
 			var routingOptions = {};
 			routingOptions.alternatives = ( options.routingOptions && options.routingOptions.alternatives ? options.routingOptions.alternatives : true );
