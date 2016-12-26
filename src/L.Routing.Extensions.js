@@ -123,12 +123,23 @@ Tests to do...
 				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
 			}	
 
+			var routingOptions = {};
+			routingOptions.alternatives = ( options.routingOptions && options.routingOptions.alternatives ? options.routingOptions.alternatives : true );
+			routingOptions.steps = ( options.routingOptions && options.routingOptions.steps ? options.routingOptions.steps : true );
+			var useHints = ( options.useHints ? options.useHints : true );
 			var routerOptions = {
-				providerKeys : options.providerKeys,
-				language : options.language,
 				provider : options.provider,
-				transitMode : options.transitMode
+				transitMode : options.transitMode,
+				providerKeys : options.providerKeys,
+				serviceUrl: options.serviceUrl || 'https://router.project-osrm.org/route/v1',
+				timeout : options.timeout || 30 * 1000,
+				routingOptions : routingOptions,
+				polylinePrecision : options.polylinePrecision || 5,
+				useHints: useHints,
+				suppressDemoServerWarning: false,
+				language : options.language,
 			};
+			
 			var routerFactory = require ( './L.Routing.Extensions.Router' );
 			options.router = routerFactory ( routerOptions );
 
@@ -419,16 +430,22 @@ Tests to do...
 				L.DomEvent.on ( 
 					polyline,
 					'click',
-					function ( MouseEvent ) {
-						PolylineMenu ( MouseEvent, this._map, Lrm );
-					}
+					L.bind (
+						function ( MouseEvent ) {
+							PolylineMenu ( MouseEvent, this._map, this );
+						},
+						this
+					)
 				);
 				L.DomEvent.on ( 
 					polyline,
 					'contextmenu',
-					function ( MouseEvent ) {
-						PolylineMenu ( MouseEvent, this._map, Lrm );
-					}
+					L.bind (
+						function ( MouseEvent ) {
+							PolylineMenu ( MouseEvent, this._map, this );
+						},
+						this
+					)
 				);
 				
 				this._routePolylines.addLayer ( polyline );
@@ -459,16 +476,22 @@ Tests to do...
 			L.DomEvent.on ( 
 				polyline,
 				'click',
-				function ( MouseEvent ) {
-					PolylineMenu ( MouseEvent, this._map, Lrm );
-				}
+				L.bind (
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, this );
+					},
+					this
+				)
 			);
 			L.DomEvent.on ( 
 				polyline,
 				'contextmenu',
-				function ( MouseEvent ) {
-					PolylineMenu ( MouseEvent, this._map, Lrm );
-				}
+				L.bind (
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, this );
+					},
+					this
+				)
 			);
 			
 			this._routePolylines.addLayer ( polyline );
