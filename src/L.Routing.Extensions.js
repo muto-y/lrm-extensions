@@ -123,6 +123,15 @@ Tests to do...
 				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
 			}	
 
+			// the user don't gives a default provider, but a provider key is filled
+			if ( 'osrm' === options.provider && 0 < options.providerKeys.Mapbox.length ) {
+				options.provider = 'mapbox';
+			} else if ( 'osrm' === options.provider && 0 < options.providerKeys.Mapzen.length ) {
+				options.provider = 'mapzen';
+			} else if ( 'osrm' === options.provider && 0 < options.providerKeys.GraphHopper.length ) {
+				options.provider = 'graphhopper';
+			}
+
 			var routingOptions = {};
 			routingOptions.alternatives = ( options.routingOptions && options.routingOptions.alternatives ? options.routingOptions.alternatives : true );
 			routingOptions.steps = ( options.routingOptions && options.routingOptions.steps ? options.routingOptions.steps : true );
