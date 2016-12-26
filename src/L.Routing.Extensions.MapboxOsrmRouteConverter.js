@@ -14,7 +14,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
---- L.Routing.Extensions.MapboxOsrmRouteConverter.js file ---------------------------------------------------------------------------------------
++----------------------------------------------------------------------------------------------------------------------+
+| This code is mainly coming from leaflet-routing-machine by Per Liedman.                                              |
+| See https://github.com/perliedman/leaflet-routing-machine                                                            |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
+/*
+--- L.Routing.Extensions.MapboxOsrmRouteConverter.js file --------------------------------------------------------------
+
 This file contains:
 	- 
 	- 

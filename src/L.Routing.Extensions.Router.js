@@ -14,7 +14,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
---- L.Routing.Extensions.Router.js file ---------------------------------------------------------------------------------------
++----------------------------------------------------------------------------------------------------------------------+
+| This code is partialy coming from:                                                                                   |
+| - leaflet-routing-machine by Per Liedman. See https://github.com/perliedman/leaflet-routing-machine                  |
+| - lrm-graphhopper by Per Liedman. See https://github.com/perliedman/lrm-graphhopper                                  |
+| - lrm-mapzen by mapzen. See https://github.com/mapzen/lrm-mapzen                                                     |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
+/*
+--- L.Routing.Extensions.Router.js file --------------------------------------------------------------------------------
 This file contains:
 	- 
 	- 

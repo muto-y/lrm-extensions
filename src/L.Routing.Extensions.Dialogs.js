@@ -13,11 +13,31 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+--- L.Routing.Extensions.Dialogs.js file -------------------------------------------------------------------------------
+This file contains:
+	- 
+	- 
+Changes:
+	- v1.0.1:
+		- created
+		
+Doc not reviewed...
+Tests to do...
+------------------------------------------------------------------------------------------------------------------------
+*/
+
 (function() {
 	'use strict';
 
+	/*
+	--- PolylineDialog object ----------------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
 	function PolylineDialog ( options, map, routingMachine, polyline ) {	
 	
+		// options
 		options = options || {};
 		options.color = options.color || '#000000';
 		options.width = options.width || 5;
@@ -26,30 +46,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		// Main div
 		var PolylineDialogMainDiv = L.DomUtil.create ( 'div','cyPolylineDialogMainDiv' );
-/*
-		L.DomEvent.on ( 
-			PolylineDialogMainDiv,
-			'keyup',
-			function ( KeyBoardEvent ) { 
-				console.log ( 'KeyPressed' );
-				console.log ( KeyBoardEvent.key );
-				switch ( KeyBoardEvent.key ) {
-					case 'Escape':
-					case 'Esc':
-						map.closePopup ( );
-						break;
-					case 'Enter':
-						options.color = ColorInput.value;
-						options.width = WidthInput.value;
-						options.ok = true;
-						map.closePopup ( );
-						break;
-					default:
-						break;
-				}
-			}
-		);
-*/
+
 		var PolylineDialogInputDiv = L.DomUtil.create ( 'div','cyPolylineDialogInputDiv', PolylineDialogMainDiv );
 
 		// Color
@@ -148,6 +145,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			} 
 		);
 		
+		// show dialog
 		L.popup
 			(
 				{
@@ -164,11 +162,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		return options;
 	}
 	
+	/*
+	--- polylineDialog function --------------------------------------------------------------------------------------------
+	PolylineDialog factory function
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+	
 	function polylineDialog ( options, map, routingMachine, polyline ) {	
 		return new PolylineDialog ( options, map, routingMachine, polyline );
 	}
 	
+	/*
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
+
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = polylineDialog;
 	}
 } ) ( );
+
+/* --- End of L.Routing.Extensions.Dialogs.js file --- */

@@ -127,11 +127,13 @@ Tests to do...
 				options.provider = 'graphhopper';
 			}
 			
+			// Formatter change if the provider is Mapzen
 			require ( './L.Routing.Extensions.MapzenFormatter' );
 			if ( 'mapzen' === options.provider ) {
 				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
 			}	
 
+			// Router options
 			var routingOptions = {};
 			routingOptions.alternatives = ( options.routingOptions && options.routingOptions.alternatives ? options.routingOptions.alternatives : true );
 			routingOptions.steps = ( options.routingOptions && options.routingOptions.steps ? options.routingOptions.steps : true );
@@ -799,7 +801,7 @@ Tests to do...
 									}
 								);
 							}
-							//Mapzen post-instruction
+							// Mapzen post-instruction
 							if ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
 								var PostInstructionElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( PostInstructionElement );

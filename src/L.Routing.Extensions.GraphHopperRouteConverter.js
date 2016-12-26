@@ -13,6 +13,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+
+/*
++----------------------------------------------------------------------------------------------------------------------+
+| This code is mainly coming from lrm-graphhopper by Per Liedman.                                                      |
+| See https://github.com/perliedman/lrm-graphhopper                                                                    |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
 /*
 --- L.Routing.Extensions.GraphHopperConverter.js file ---------------------------------------------------------------------------------------
 This file contains:
@@ -87,7 +95,7 @@ Tests to do...
 
 		_toWaypoints : function ( inputWaypoints, responseWaypoints ) {
 
-		var wayPoints = [ ];
+			var wayPoints = [ ];
 		
 			for ( var counter = 0; counter < responseWaypoints.length; counter ++ ) {
 				wayPoints.push (

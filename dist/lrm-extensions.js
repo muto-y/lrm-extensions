@@ -2382,11 +2382,31 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+--- L.Routing.Extensions.Dialogs.js file -------------------------------------------------------------------------------
+This file contains:
+	- 
+	- 
+Changes:
+	- v1.0.1:
+		- created
+		
+Doc not reviewed...
+Tests to do...
+------------------------------------------------------------------------------------------------------------------------
+*/
+
 (function() {
 	'use strict';
 
+	/*
+	--- PolylineDialog object ----------------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
 	function PolylineDialog ( options, map, routingMachine, polyline ) {	
 	
+		// options
 		options = options || {};
 		options.color = options.color || '#000000';
 		options.width = options.width || 5;
@@ -2395,30 +2415,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		
 		// Main div
 		var PolylineDialogMainDiv = L.DomUtil.create ( 'div','cyPolylineDialogMainDiv' );
-/*
-		L.DomEvent.on ( 
-			PolylineDialogMainDiv,
-			'keyup',
-			function ( KeyBoardEvent ) { 
-				console.log ( 'KeyPressed' );
-				console.log ( KeyBoardEvent.key );
-				switch ( KeyBoardEvent.key ) {
-					case 'Escape':
-					case 'Esc':
-						map.closePopup ( );
-						break;
-					case 'Enter':
-						options.color = ColorInput.value;
-						options.width = WidthInput.value;
-						options.ok = true;
-						map.closePopup ( );
-						break;
-					default:
-						break;
-				}
-			}
-		);
-*/
+
 		var PolylineDialogInputDiv = L.DomUtil.create ( 'div','cyPolylineDialogInputDiv', PolylineDialogMainDiv );
 
 		// Color
@@ -2517,6 +2514,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 			} 
 		);
 		
+		// show dialog
 		L.popup
 			(
 				{
@@ -2533,14 +2531,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 		return options;
 	}
 	
+	/*
+	--- polylineDialog function --------------------------------------------------------------------------------------------
+	PolylineDialog factory function
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+	
 	function polylineDialog ( options, map, routingMachine, polyline ) {	
 		return new PolylineDialog ( options, map, routingMachine, polyline );
 	}
 	
+	/*
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
+
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = polylineDialog;
 	}
 } ) ( );
+
+/* --- End of L.Routing.Extensions.Dialogs.js file --- */
 },{}],11:[function(require,module,exports){
 /*
 Copyright - 2015 2016 - Christian Guyette - Contact: http//www.ouaie.be/
@@ -2555,6 +2565,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+
+/*
++----------------------------------------------------------------------------------------------------------------------+
+| This code is mainly coming from lrm-graphhopper by Per Liedman.                                                      |
+| See https://github.com/perliedman/lrm-graphhopper                                                                    |
++----------------------------------------------------------------------------------------------------------------------+
 */
 
 /*
@@ -2631,7 +2649,7 @@ Tests to do...
 
 		_toWaypoints : function ( inputWaypoints, responseWaypoints ) {
 
-		var wayPoints = [ ];
+			var wayPoints = [ ];
 		
 			for ( var counter = 0; counter < responseWaypoints.length; counter ++ ) {
 				wayPoints.push (
@@ -2780,7 +2798,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
---- L.Routing.Extensions.MapboxOsrmRouteConverter.js file ---------------------------------------------------------------------------------------
++----------------------------------------------------------------------------------------------------------------------+
+| This code is mainly coming from leaflet-routing-machine by Per Liedman.                                              |
+| See https://github.com/perliedman/leaflet-routing-machine                                                            |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
+/*
+--- L.Routing.Extensions.MapboxOsrmRouteConverter.js file --------------------------------------------------------------
+
 This file contains:
 	- 
 	- 
@@ -3059,187 +3085,197 @@ Tests to do...
 
 /* --- End of L.Routing.Extensions.MapboxOsrmRouteConverter.js file --- */
 },{"osrm-text-instructions":2,"polyline":9}],13:[function(require,module,exports){
-(function (global){
+/*
++----------------------------------------------------------------------------------------------------------------------+
+| This code is coming from lrm-mapzen by mapzen.                                                                       |
+| See https://github.com/mapzen/lrm-mapzen                                                                             |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
 (function() {
-  'use strict';
+	'use strict';
 
-  var L = (typeof window !== "undefined" ? window.L : typeof global !== "undefined" ? global.L : null);
+	L.Routing.Extensions.MapzenFormatter = L.Class.extend ( {
+		options : {
+			units: 'metric',
+			unitNames: {
+				meters: 'm',
+				kilometers: 'km',
+				yards: 'yd',
+				miles: 'mi',
+				hours: 'h',
+				minutes: 'mín',
+				seconds: 's'
+			},
+			language: 'en',			
+			roundingSensitivity: 1,			
+			distanceTemplate: '{value} {unit}'
+		},
 
-  L.Routing = L.Routing || {};
+		initialize : function ( options ) {
+			L.setOptions( this, options );
+		},
 
-  //L.extend(L.Routing, require('./L.Routing.Localization'));
-  L.Routing.Extensions.MapzenFormatter = L.Class.extend({
-    options: {
-      units: 'metric',
-      unitNames: {
-        meters: 'm',
-        kilometers: 'km',
-        yards: 'yd',
-        miles: 'mi',
-        hours: 'h',
-        minutes: 'mín',
-        seconds: 's'
-      },
-      language: 'en',
-      roundingSensitivity: 1,
-      distanceTemplate: '{value} {unit}'
-    },
+		formatDistance : function ( d /* Number (meters) */ ) {
+			var un = this.options.unitNames,
+				v,
+				data;
+			if ( this.options.units === 'imperial' ) {
+			//valhalla returns distance in km
+				d = d * 1000;
+				d = d / 1.609344;
+				if ( d >= 1000 ) {
+					data = {
+						value: ( this._round ( d ) / 1000 ),
+						unit: un.miles
+					};
+				} 
+				else {
+					data = {
+						value: this._round ( d / 1.760 ),
+						unit: un.yards
+					};
+				}
+			} 
+			else {
+				v = d;
+				data = {
+					value: v >= 1 ? v : v * 1000,
+					unit: v >= 1 ? un.kilometers : un.meters
+				};
+			}
 
-    initialize: function(options) {
-      L.setOptions(this, options);
-    },
+			return L.Util.template ( this.options.distanceTemplate, data );
+		},
 
-    formatDistance: function(d /* Number (meters) */) {
-      var un = this.options.unitNames,
-          v,
-        data;
-      if (this.options.units === 'imperial') {
-        //valhalla returns distance in km
-        d  = d * 1000;
-        d = d / 1.609344;
-        if (d >= 1000) {
-          data = {
-            value: (this._round(d) / 1000),
-            unit: un.miles
-          };
-        } else {
-          data = {
-            value: this._round(d / 1.760),
-            unit: un.yards
-          };
-        }
-      } else {
-        v = d;
-        data = {
-          value: v >= 1 ? v: v*1000,
-          unit: v >= 1 ? un.kilometers : un.meters
-        };
-      }
+		_round : function ( d ) {
+			var pow10 = Math.pow ( 10, ( Math.floor ( d / this.options.roundingSensitivity ) + '' ).length - 1 ),
+				r = Math.floor ( d / pow10 ),
+				p = (r > 5) ? pow10 : pow10 / 2;
 
-       return L.Util.template(this.options.distanceTemplate, data);
-    },
+			return Math.round( d / p ) * p;
+		},
 
-    _round: function(d) {
-      var pow10 = Math.pow(10, (Math.floor(d / this.options.roundingSensitivity) + '').length - 1),
-        r = Math.floor(d / pow10),
-        p = (r > 5) ? pow10 : pow10 / 2;
+		formatTime: function ( t /* Number (seconds) */ ) {
+			if ( t > 86400 ) {
+				return Math.round( t / 3600) + ' h';
+			} 
+			else if ( t > 3600 ) {
+				return Math.floor ( t / 3600 ) + ' h ' + Math.round ( ( t % 3600 ) / 60 ) + ' min';
+			} 
+			else if ( t > 300 ) {
+				return Math.round ( t / 60 ) + ' min';
+			} 
+			else if ( t > 60) {
+				return Math.floor ( t / 60 ) + ' min' + ( t % 60 !== 0 ? ' ' + ( t % 60 ) + ' s' : '' );
+			} 
+			else {
+				return t + ' s';
+			}
+		},
 
-      return Math.round(d / p) * p;
-    },
+		formatInstruction: function ( instr, i ) {
+		// Valhalla returns instructions itself.
+			return instr.instruction;
+		},
 
-    formatTime: function(t /* Number (seconds) */) {
-      if (t > 86400) {
-        return Math.round(t / 3600) + ' h';
-      } else if (t > 3600) {
-        return Math.floor(t / 3600) + ' h ' +
-          Math.round((t % 3600) / 60) + ' min';
-      } else if (t > 300) {
-        return Math.round(t / 60) + ' min';
-      } else if (t > 60) {
-        return Math.floor(t / 60) + ' min' +
-          (t % 60 !== 0 ? ' ' + (t % 60) + ' s' : '');
-      } else {
-        return t + ' s';
-      }
-    },
+		getIconName: function(instr, i) {
+		// you can find all Valhalla's direction types at https://github.com/valhalla/odin/blob/master/proto/tripdirections.proto
+			switch (instr.type) {
+				case 0:
+					return 'kNone';
+				case 1:
+					return 'kStart';
+				case 2:
+					return 'kStartRight';
+				case 3:
+					return 'kStartLeft';
+				case 4:
+					return 'kDestination';
+				case 5:
+					return 'kDestinationRight';
+				case 6:
+					return 'kDestinationLeft';
+				case 7:
+					return 'kBecomes';
+				case 8:
+					return 'kContinue';
+				case 9:
+					return 'kSlightRight';
+				case 10:
+					return 'kRight';
+				case 11:
+					return 'kSharpRight';
+				case 12:
+					return 'kUturnRight';
+				case 13:
+					return 'kUturnLeft';
+				case 14:
+					return 'kSharpLeft';
+				case 15:
+					return 'kLeft';
+				case 16:
+					return 'kSlightLeft';
+				case 17:
+					return 'kRampStraight';
+				case 18:
+					return 'kRampRight';
+				case 19:
+					return 'kRampLeft';
+				case 20:
+					return 'kExitRight';
+				case 21:
+					return 'kExitLeft';
+				case 22:
+					return 'kStayStraight';
+				case 23:
+					return 'kStayRight';
+				case 24:
+					return 'kStayLeft';
+				case 25:
+					return 'kMerge';
+				case 26:
+					return 'kRoundaboutEnter';
+				case 27:
+					return 'kRoundaboutExit';
+				case 28:
+					return 'kFerryEnter';
+				case 29:
+					return 'kFerryExit';
+				// lrm-mapzen unifies transit commands and give them same icons
+				case 30:
+				case 31: //'kTransitTransfer'
+				case 32: //'kTransitRemainOn'
+				case 33: //'kTransitConnectionStart'
+				case 34: //'kTransitConnectionTransfer'
+				case 35: //'kTransitConnectionDestination'
+				case 36: //'kTransitConnectionDestination'
+					if ( instr.edited_travel_type ) {
+						return 'kTransit' + this._getCapitalizedName ( instr.edited_travel_type );
+					}
+					else {
+						return 'kTransit';
+					}
+			}
+		},
 
-    formatInstruction: function(instr, i) {
-      // Valhalla returns instructions itself.
-      return instr.instruction;
-    },
+		_getInstructionTemplate: function ( instr, i ) {
+			return instr.instruction + " " + instr.length;
+		},
+		
+		_getCapitalizedName: function ( name ) {
+			return name.charAt ( 0 ).toUpperCase ( ) + name.slice ( 1 );
+		}
+	});
 
-    getIconName: function(instr, i) {
-      // you can find all Valhalla's direction types at https://github.com/valhalla/odin/blob/master/proto/tripdirections.proto
-      switch (instr.type) {
-        case 0:
-          return 'kNone';
-        case 1:
-          return 'kStart';
-        case 2:
-          return 'kStartRight';
-        case 3:
-          return 'kStartLeft';
-        case 4:
-          return 'kDestination';
-        case 5:
-          return 'kDestinationRight';
-        case 6:
-          return 'kDestinationLeft';
-        case 7:
-          return 'kBecomes';
-        case 8:
-          return 'kContinue';
-        case 9:
-          return 'kSlightRight';
-        case 10:
-          return 'kRight';
-        case 11:
-          return 'kSharpRight';
-        case 12:
-          return 'kUturnRight';
-        case 13:
-          return 'kUturnLeft';
-        case 14:
-          return 'kSharpLeft';
-        case 15:
-          return 'kLeft';
-        case 16:
-          return 'kSlightLeft';
-        case 17:
-          return 'kRampStraight';
-        case 18:
-          return 'kRampRight';
-        case 19:
-          return 'kRampLeft';
-        case 20:
-          return 'kExitRight';
-        case 21:
-          return 'kExitLeft';
-        case 22:
-          return 'kStayStraight';
-        case 23:
-          return 'kStayRight';
-        case 24:
-          return 'kStayLeft';
-        case 25:
-          return 'kMerge';
-        case 26:
-          return 'kRoundaboutEnter';
-        case 27:
-          return 'kRoundaboutExit';
-        case 28:
-          return 'kFerryEnter';
-        case 29:
-          return 'kFerryExit';
-        // lrm-mapzen unifies transit commands and give them same icons
-        case 30:
-        case 31: //'kTransitTransfer'
-        case 32: //'kTransitRemainOn'
-        case 33: //'kTransitConnectionStart'
-        case 34: //'kTransitConnectionTransfer'
-        case 35: //'kTransitConnectionDestination'
-        case 36: //'kTransitConnectionDestination'
-          if (instr.edited_travel_type) return 'kTransit' + this._getCapitalizedName(instr.edited_travel_type);
-          else return 'kTransit';
-      }
-    },
+	L.Routing.Extensions.mapzenFormatter = function ( options ) {
+		return new L.Routing.Extensions.MapzenFormatter ( options );
+	};
 
-    _getInstructionTemplate: function(instr, i) {
-      return instr.instruction + " " +instr.length;
-    },
-    _getCapitalizedName: function(name) {
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
-  });
-
-  L.Routing.Extensions.mapzenFormatter = function(options) {
-    return new L.Routing.Extensions.MapzenFormatter(options);
-  };
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = L.Routing.Extensions.mapzenFormatter;
 	}
 })();
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],14:[function(require,module,exports){
 /*
 Copyright - 2015 2016 - Christian Guyette - Contact: http//www.ouaie.be/
@@ -3257,7 +3293,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
---- L.Routing.Extensions.MapzenRouteConverter.js file ---------------------------------------------------------------------------------------
++----------------------------------------------------------------------------------------------------------------------+
+| This code is mainly coming from lrm-mapzen by mapzen.                                                                |
+| See https://github.com/mapzen/lrm-mapzen                                                                             |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
+/*
+--- L.Routing.Extensions.MapzenRouteConverter.js file ------------------------------------------------------------------
 This file contains:
 	- 
 	- 
@@ -3341,7 +3384,7 @@ Tests to do...
 					summary : response.trip.summary ? this._convertSummary ( response.trip.summary ) : [ ],
 					inputWaypoints: inputWaypoints,
 					waypoints: actualWaypoints,
-					waypointIndices: this._clampIndices ( [0,response.trip.legs [ 0 ].maneuvers.length ], coordinates )
+					waypointIndices: this._clampIndices ( [ 0, response.trip.legs [ 0 ].maneuvers.length ], coordinates )
 				}
 			];
 
@@ -3353,24 +3396,25 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_unifyTransitManeuver: function(insts) {
+		_unifyTransitManeuver: function ( insts ) {
 
-		  var transitType;
-		  var newInsts = insts;
+			var transitType;
+			var newInsts = insts;
 
-		  for(var i = 0; i < newInsts.length; i++) {
-			if(newInsts[i].type == 30) {
-			  transitType = newInsts[i].travel_type;
-			  break;
+			for ( var i = 0; i < newInsts.length; i ++ ) {
+				if ( newInsts [ i ].type == 30) {
+				  transitType = newInsts [ i ].travel_type;
+				  break;
+				}
 			}
-		  }
 
-		  for(var j = 0; j < newInsts.length; j++) {
-			if(newInsts[j].type > 29) newInsts[j].edited_travel_type = transitType;
-		  }
+			for ( var j = 0; j < newInsts.length; j ++) {
+				if ( newInsts [ j ].type > 29 ) {
+					newInsts [ j ].edited_travel_type = transitType;
+				}
+			}
 
-		  return newInsts;
-
+			return newInsts;
 		},
 		
 		/*
@@ -3378,16 +3422,20 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_toWaypoints: function(inputWaypoints, vias) {
-		  var wps = [],
-			  i;
-		  for (i = 0; i < vias.length; i++) {
-			wps.push(L.Routing.waypoint(L.latLng([vias[i].lat,vias[i].lon]),
-										"name",
-										{}));
-		  }
+		_toWaypoints: function ( inputWaypoints, responseWaypoints ) {
 
-		  return wps;
+			var wayPoints = [ ];
+			for ( var counter = 0; counter < responseWaypoints.length; counter ++) {
+				wayPoints.push (
+					L.Routing.waypoint (
+						L.latLng ( [ responseWaypoints [ counter ].lat, responseWaypoints [ counter ].lon ] ),
+						"name",
+						{}
+					)
+				);
+			}
+
+			return wayPoints;
 		},
 		
 		/*
@@ -3397,56 +3445,67 @@ Tests to do...
 
 		_getSubRoutes: function(legs) {
 
-		  var subRoute = [];
+			var subRoute = [];
 
-		  for (var i = 0; i < legs.length; i++) {
+			for ( var i = 0; i < legs.length; i ++ ) {
+				var coords = polyline.decode(legs[i].shape, 6);
 
-			var coords = polyline.decode(legs[i].shape, 6);
+				var lastTravelType;
+				var transitIndices = [ ];
+				for( var j = 0; j < legs [ i ].maneuvers.length; j ++ ) {
+					var res = legs [ i ].maneuvers [ j ];
+					var travelType = res.travel_type;
 
-			var lastTravelType;
-			var transitIndices = [];
-			for(var j = 0; j < legs[i].maneuvers.length; j++){
+					if ( travelType !== lastTravelType || res.type === 31 /*this is for transfer*/) {
+						//transit_info only exists in the transit maneuvers
+						//loop thru maneuvers and populate indices array with begin shape index
+						//also populate subRoute array to contain the travel type & color associated with the transit polyline sub-section
+						//otherwise just populate with travel type and use fallback style
+						if(res.begin_shape_index > 0) {
+							transitIndices.push(res.begin_shape_index);
+						}
+						if( res.transit_info ) {
+							subRoute.push (
+								{ 
+									travel_type: travelType, 
+									styles: this._getPolylineColor ( res.transit_info.color )
+								}
+							);
+						}
+						else {
+							subRoute.push ( 
+								{
+									travel_type: travelType
+								}
+							);
+						}
+					}
 
-			  var res = legs[i].maneuvers[j];
-			  var travelType = res.travel_type;
-
-			  if(travelType !== lastTravelType || res.type === 31 /*this is for transfer*/) {
-				//transit_info only exists in the transit maneuvers
-				//loop thru maneuvers and populate indices array with begin shape index
-				//also populate subRoute array to contain the travel type & color associated with the transit polyline sub-section
-				//otherwise just populate with travel type and use fallback style
-				if(res.begin_shape_index > 0) transitIndices.push(res.begin_shape_index);
-				if(res.transit_info) {
-					subRoute.push({ travel_type: travelType, styles: this._getPolylineColor(res.transit_info.color) });
+					lastTravelType = travelType;
 				}
-				else {
-					subRoute.push({travel_type: travelType});
+
+				//add coords length to indices array
+				transitIndices.push ( coords.length );
+
+				//logic to create the subsets of the polyline by indexing into the shape
+				var index_marker = 0;
+				for ( var index = 0; index < transitIndices.length; index ++ ) {
+					var subRouteArr = [ ];
+					var overwrapping = 0;
+					//if index != the last indice, we want to overwrap (or add 1) so that routes connect
+					if ( index !== transitIndices.length-1 ) {
+						overwrapping = 1;
+					}
+					for ( var ti = index_marker; ti < transitIndices [ index ] + overwrapping; ti ++ ) {
+						subRouteArr.push ( coords [ ti ] );
+					}
+
+					var temp_array = subRouteArr;
+					index_marker = transitIndices [ index ];
+					subRoute[index].coordinates = temp_array;
 				}
-			  }
-
-			  lastTravelType = travelType;
 			}
-
-			//add coords length to indices array
-			transitIndices.push(coords.length);
-
-			//logic to create the subsets of the polyline by indexing into the shape
-			var index_marker = 0;
-			for(var index = 0; index < transitIndices.length; index++) {
-			  var subRouteArr = [];
-			  var overwrapping = 0;
-			  //if index != the last indice, we want to overwrap (or add 1) so that routes connect
-			  if(index !== transitIndices.length-1) overwrapping = 1;
-			  for (var ti = index_marker; ti < transitIndices[index] + overwrapping; ti++){
-				subRouteArr.push(coords[ti]);
-			  }
-
-			  var temp_array = subRouteArr;
-			  index_marker = transitIndices[index];
-			  subRoute[index].coordinates = temp_array;
-			}
-		  }
-		  return subRoute;
+			return subRoute;
 		},		
 		
 		/*
@@ -3454,15 +3513,8 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_trimLocationKey: function(location){
-		  var lat = location.lat;
-		  var lng = location.lng;
-
-		  var nameLat = Math.floor(location.lat * 1000)/1000;
-		  var nameLng = Math.floor(location.lng * 1000)/1000;
-
-		  return nameLat + ' , ' + nameLng;
-
+		_trimLocationKey: function ( location ) {
+			return ( Math.floor ( location.lat * 1000 ) / 1000 ) + ' , ' + (  Math.floor ( location.lng * 1000 ) / 1000 );
 		},
 		
 		/*
@@ -3471,10 +3523,10 @@ Tests to do...
 		*/
 
 		_convertSummary: function(route) {
-		  return {
-			totalDistance: route.length,
-			totalTime: route.time
-		  };
+			return {
+				totalDistance: route.length,
+				totalTime: route.time
+			};
 		},
 		
 		/*
@@ -3484,30 +3536,28 @@ Tests to do...
 
 	   _getPolylineColor: function(intColor) {
 
-		  // isolate red, green, and blue components
-		  var red = (intColor >> 16) & 0xff,
-			  green = (intColor >> 8) & 0xff,
-			  blue = (intColor >> 0) & 0xff;
+			// isolate red, green, and blue components
+			var red = (intColor >> 16) & 0xff;
+			var green = (intColor >> 8) & 0xff;
+			var blue = (intColor >> 0) & 0xff;
 
-		  // calculate luminance in YUV colorspace based on
-		  // https://en.wikipedia.org/wiki/YUV#Conversion_to.2Ffrom_RGB
-		  var lum = 0.299 * red + 0.587 * green + 0.114 * blue,
-			  is_light = (lum > 0xbb);
+			// calculate luminance in YUV colorspace based on
+			// https://en.wikipedia.org/wiki/YUV#Conversion_to.2Ffrom_RGB
+			var lum = 0.299 * red + 0.587 * green + 0.114 * blue;
+			var is_light = (lum > 0xbb);
 
-		  // generate a CSS color string like 'RRGGBB'
-		  var paddedHex = 0x1000000 | (intColor & 0xffffff),
-			  lineColor = paddedHex.toString(16).substring(1, 7);
+			// generate a CSS color string like 'RRGGBB'
+			var paddedHex = 0x1000000 | ( intColor & 0xffffff );
+			var lineColor = paddedHex.toString ( 16 ).substring ( 1, 7 );
 
-		  var polylineColor = [
-				  // Color of outline depending on luminance against background.
-				  (is_light ? {color: '#000', opacity: 0.4, weight: 10}
-							: {color: '#fff', opacity: 0.8, weight: 10}),
+			var polylineColor = [
+				// Color of outline depending on luminance against background.
+				( is_light ? { color: '#000', opacity: 0.4, weight: 10 } : { color: '#fff', opacity: 0.8, weight: 10 } ),
+				// Color of the polyline subset.
+				{ color: '#' + lineColor.toUpperCase ( ), opacity: 1, weight: 6 }
+			];
 
-				  // Color of the polyline subset.
-				  {color: '#'+lineColor.toUpperCase(), opacity: 1, weight: 6}
-				];
-
-		  return polylineColor;
+			return polylineColor;
 	   },
 	   
 		/*
@@ -3515,14 +3565,14 @@ Tests to do...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_clampIndices: function(indices, coords) {
-		  var maxCoordIndex = coords.length - 1,
-			i;
-		  for (i = 0; i < indices.length; i++) {
-			indices[i] = Math.min(maxCoordIndex, Math.max(indices[i], 0));
-		  }
+		_clampIndices: function ( indices, coords ) {
+			
+			var maxCoordIndex = coords.length - 1;
+			
+			for ( var i = 0; i < indices.length; i ++ ) {
+				indices [ i ] = Math.min ( maxCoordIndex, Math.max ( indices [ i ], 0 ) );
+			}
 		}
-		
 	} );
 	
 	/*
@@ -3670,7 +3720,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /*
---- L.Routing.Extensions.Router.js file ---------------------------------------------------------------------------------------
++----------------------------------------------------------------------------------------------------------------------+
+| This code is partialy coming from:                                                                                   |
+| - leaflet-routing-machine by Per Liedman. See https://github.com/perliedman/leaflet-routing-machine                  |
+| - lrm-graphhopper by Per Liedman. See https://github.com/perliedman/lrm-graphhopper                                  |
+| - lrm-mapzen by mapzen. See https://github.com/mapzen/lrm-mapzen                                                     |
++----------------------------------------------------------------------------------------------------------------------+
+*/
+
+/*
+--- L.Routing.Extensions.Router.js file --------------------------------------------------------------------------------
 This file contains:
 	- 
 	- 
@@ -4257,11 +4316,13 @@ Tests to do...
 				options.provider = 'graphhopper';
 			}
 			
+			// Formatter change if the provider is Mapzen
 			require ( './L.Routing.Extensions.MapzenFormatter' );
 			if ( 'mapzen' === options.provider ) {
 				options.formatter = L.Routing.Extensions.mapzenFormatter ( );		
 			}	
 
+			// Router options
 			var routingOptions = {};
 			routingOptions.alternatives = ( options.routingOptions && options.routingOptions.alternatives ? options.routingOptions.alternatives : true );
 			routingOptions.steps = ( options.routingOptions && options.routingOptions.steps ? options.routingOptions.steps : true );
@@ -4929,7 +4990,7 @@ Tests to do...
 									}
 								);
 							}
-							//Mapzen post-instruction
+							// Mapzen post-instruction
 							if ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
 								var PostInstructionElement = document.createElement ( 'div' );
 								RouteElement.appendChild ( PostInstructionElement );
