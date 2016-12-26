@@ -1,0 +1,217 @@
+/* contextmenu */
+.PolylineMenu .leaflet-popup-content
+{
+	margin: 1px;
+}
+.PolylineMenu > div
+{
+	background-color: rgb(240,240,240);
+	border-style: solid;
+	border-radius: 0;
+	border-width : 1px;
+	z-index: 9999;
+}
+.PolylineMenu-EditPinButton,
+.PolylineMenu-DeletePinButton,
+.PolylineMenu-CancelPinButton
+{
+	text-align: center;
+	width: 150px;
+	display: block;
+	border-style: solid;
+	border-top-color: lightgray;
+	border-left-color: lightgray;
+	border-bottom-color: darkgray;
+	border-right-color: darkgray;
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-bottom-width : 1px;
+	border-right-width : 1px;
+	padding-top: 2px;
+	padding-left: 2px;
+	padding-bottom: 2px;
+	padding-right: 2px; 
+	margin-bottom: 3px;
+	background: linear-gradient(lightgray, white);
+}
+.PolylineMenu-EditPinButton:hover,
+.PolylineMenu-DeletePinButton:hover,
+.PolylineMenu-CancelPinButton:hover
+{
+	color:	black;
+	border-color: black;
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-bottom-width : 2px;
+	border-right-width : 2px;
+	padding-top: 2px;
+	padding-left: 2px;
+	padding-bottom: 1px;
+	padding-right: 1px; 
+	background: linear-gradient(white,lightgray);
+}
+.PolylineMenu > div.leaflet-popup-tip-container
+{
+	visibility: hidden;
+}
+
+/* dialog */
+.cyPolylineDialog > div
+{
+	background-color: rgb(240,240,240);
+	border-radius: 0;
+	border-style: solid;
+	border-width : 1px;
+	z-index: 9999;
+	width: 20em;
+}
+.cyPolylineDialog > div.leaflet-popup-tip-container
+{
+	visibility: hidden;
+}
+.cyPolylineDialogInputDiv
+{
+	border-style: solid;
+	border-width : 1px;
+}
+div.cyPolylineDialogInputDiv > div
+{
+	text-align: center;
+	padding: 1em;
+	font-weight: normal;
+	font-size: medium;
+}
+div.cyPolylineDialogInputDiv > div > input
+{
+	width: 4em;
+}
+
+.cyPolylineDialogButtonsDiv
+{
+	text-align: center;
+	margin: 1em;
+}
+.cyPolylineDialogOkButton,
+.cyPolylineDialogCancelButton
+{
+	width: 6em;
+}
+
+/* control */
+
+html > body > div#cyMap.leaflet-container.leaflet-fade-anim.leaflet-grab.leaflet-touch-drag > div.leaflet-control-container > div.leaflet-top.leaflet-right > div.leaflet-routing-container.leaflet-bar.leaflet-routing-collapsible.leaflet-control > form.lrm-extensions-ServiceButtons > a#downloadGpx.lrm-extensions-ServicesAnchor
+{
+	display: inline;
+	text-decoration: none !important;
+}
+.lrm-extensions-ServicesButton,
+.lrm-extensions-Label
+{
+	background-repeat : no-repeat;
+	height: 30px;
+	width: 30px;
+    display: inline-block;
+	border-style: solid;
+	border-top-width : 1px;
+	border-left-width : 1px;
+	border-bottom-width : 3px;
+	border-right-width : 3px;
+	border-color : gainsboro;
+	padding: 1px;
+	margin: 3px;
+	border-radius: 3px;
+}
+.lrm-extensions-Label:hover,
+.lrm-extensions-ServicesButton:hover
+{
+	border-color : black;
+}
+.lrm-extensions-Label:active,
+.lrm-extensions-ServicesButton:active
+{
+	border-top-width : 3px;
+	border-left-width : 3px;
+	border-bottom-width : 1px;
+	border-right-width : 1px;
+	border-color : black;
+}
+#lrm-extensions-BikeButton
+{
+	display: none;
+}
+#lrm-extensions-BikeButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/Bike.png');
+}
+#lrm-extensions-BikeLabel
+{
+	background-image : url('lrm-extensions.img/control/NoBike.png');
+}
+#lrm-extensions-PedestrianButton
+{
+	display: none;
+}
+#lrm-extensions-PedestrianButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/Pedestrian.png');
+}
+#lrm-extensions-PedestrianLabel
+{
+	background-image : url('lrm-extensions.img/control/NoPedestrian.png');
+}
+#lrm-extensions-CarButton
+{
+	display: none;
+}
+#lrm-extensions-CarButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/Car.png');
+}
+#lrm-extensions-CarLabel
+{
+	background-image : url('lrm-extensions.img/control/NoCar.png');
+}
+#lrm-extensions-GraphHopperButton
+{
+	display: none;
+}
+#lrm-extensions-GraphHopperButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/GraphHopper.png');
+}
+#lrm-extensions-GraphHopperLabel
+{
+	background-image : url('lrm-extensions.img/control/NoGraphHopper.png');
+}
+#lrm-extensions-MapzenButton
+{
+	display: none;
+}
+#lrm-extensions-MapzenButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/Mapzen.png');
+}
+#lrm-extensions-MapzenLabel
+{
+	background-image : url('lrm-extensions.img/control/NoMapzen.png');
+}
+#lrm-extensions-MapboxButton
+{
+	display: none;
+}
+#lrm-extensions-MapboxButton:checked + label
+{
+	background-image : url('lrm-extensions.img/control/Mapbox.png');
+}
+#lrm-extensions-MapboxLabel
+{
+	background-image : url('lrm-extensions.img/control/NoMapbox.png');
+}
+#lrm-extensions-GpxButton
+{
+	background-image : url('lrm-extensions.img/control/gpx.png');
+}
+#lrm-extensions-RouteToLineButton
+{
+	background-image : url('lrm-extensions.img/control/polyline.png');
+}

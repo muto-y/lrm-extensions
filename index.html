@@ -8,35 +8,17 @@
 		<meta name="author" content="Christian Guyette" />
 		<link rel="stylesheet" href="leaflet.css" />
 		<link rel="stylesheet" href="leaflet-routing-machine.css" />
+		<link rel="stylesheet" href="lrm-extensions.css" />
 		<link rel="stylesheet" href="index.css" media="screen"/>
 	</head>
 	<body>
 		<header>
 			<nav id="Menu">
 				<div id="Help" class="MenuItem">
-					<a>Help</a>
-					<div>
-						<h3>lrm-extensions</h3>
-						<p>
-							Modify the route displayed by Leaflet-Routing-Machine on the map: drag and drop a waypoint or add a new waypoint by draging the route.
-							Each time the route is modified by Leaflet-Routing-Machine, the GPX data on the right are also modified.
-						</p>
-						<p id="HelpGpxFile">
-							Click on the button "GPX file" on the left to download the data as GPX file ( work only on modern browsers like Firefox... if you will download GPX data for old browsers, you have probably to implement a server side solution...)
-						</p>
-						<p id="HelpCoordinatesFile">
-							Click on the button "Coordinates file" on the left to download the route coordinates as txt file ( work only on modern browsers like Firefox...)
-						</p>
-					</div>
-				</div>
-				<div id="GpxFile" class="MenuItem">
-					<a download="lrm-extensions.gpx" id="downloadGpx" >GPX file</a>
-				</div>
-				<div id="CoordinatesFile" class="MenuItem">
-					<a download="lrm-extensions.txt" id="downloadCoordinates" >Coordinates file</a>
+					<a href="https://github.com/wwwouaiebe/lrm-extensions/tree/gh-pages" target="_blank">Help</a>
 				</div>
 				<div id="View" class="MenuItem">
-					<a href="https://github.com/wwwouaiebe/lrm-extensions">View On GitHub</a>
+					<a href="https://github.com/wwwouaiebe/lrm-extensions" target="_blank">View On GitHub</a>
 				</div>
 				<div id="Download" class="MenuItem">
 					Download:
@@ -51,20 +33,18 @@
 		</header>
 		<div id="Map">
 		</div>
-		<div id="Gpx">
+		<div id="Text">
+			<p id="Warning"> 
+				You must have at least one access token to a route provider to see this demo correctly.
+				Please complete with your access token(s) and then push on the button to save the access tokens in the browser storage and reload the page:
+			</p>
 			<form id="options">
-				<input id="GpxXmlDeclaration" type="checkbox" checked="1">options.GpxXmlDeclaration</input><br />
-				<input id="GpxDate0" type="radio" name="GpxDate" value="0">options.GpxDate = 0</input><br />
-				<input id="GpxDate1" type="radio" name="GpxDate" value="1">options.GpxDate = 1 (paranoïds only)</input><br />
-				<input id="GpxDate2" type="radio" name="GpxDate" value="2" checked="1">options.GpxDate = 2</input><br />
-				<input id="GpxWaypoints" type="checkbox" checked="1">options.GpxWaypoints</input><br />
-				<input id="GpxRoute" type="checkbox">options.GpxRoute</input><br />
-				<input id="GpxTrack" type="checkbox" checked="1">options.GpxTrack</input><br />
+				<p>GraphHopper access token:</p><p><input id="graphHopperKey" type="text"></input></p>
+				<p>Mapzen access token:</p><p><input id="mapzenKey" type="text"></input></p>
+				<p>Mapbox access token:</p><p><input id="mapboxKey" type="text"></input></p>
+				<p><input id="saveKeys" type="button" value="Save access tokens and reload page"></input></p>
 			</form>
-			<p id="GpxError">Use the GPX file button on the left to save the file</p>
-			<textarea id="GpxString" >
-			Gpx file not found
-			</textarea>
+			<p>Visit <a href="https://graphhopper.com/dashboard/#/register" target="_blank">GraphHopper</a>, <a href="https://mapzen.com/developers/sign_in" target="_blank">Mapzen</a> and/or <a href="https://www.mapbox.com/studio/signup/?plan=starter" target="_blank">Mapbox</a>, to obtain an access token.
 		</div>
 		<script src="leaflet.js"></script>
 		<script src="leaflet-routing-machine.min.js"></script>
@@ -73,10 +53,39 @@
 			(function( ) 
 			{
 				'use strict';
-				var Map = L.map ( 'Map' ).setView( [ 50.49680, 5.51116 ], 13 );
+				var storageAvailable = function ( ) {
+					try {
+						var	x = '__storage_test__';
+						localStorage.setItem ( x, x );
+						localStorage.removeItem ( x );
+						return true;
+					}
+					catch ( e ) {
+						return false;
+					}				
+				};
+				var graphHopperKey = localStorage.getItem ( 'lrm-extensions.graphHopperKey' );
+				var mapzenKey = localStorage.getItem ( 'lrm-extensions.mapzenKey' );
+				var mapboxKey = localStorage.getItem ( 'lrm-extensions.mapboxKey' );
+				var providerKeys  = {};
+				providerKeys.GraphHopper = '';
+				if ( graphHopperKey ) {
+					providerKeys.GraphHopper =  graphHopperKey;
+					document.getElementById ( "graphHopperKey" ).value = graphHopperKey;
+				}
+				if ( mapzenKey ) {
+					providerKeys.Mapzen =  mapzenKey;
+					document.getElementById ( "mapzenKey" ).value = mapzenKey;
+				}
+				if ( mapboxKey ) {
+					providerKeys.Mapbox =  mapboxKey;
+					document.getElementById ( "mapboxKey" ).value = mapboxKey;
+				}
+				var Map = L.map ( 'Map' ).setView( [ 50.52079,5.54741 ], 13 );
 				L.tileLayer ( 'http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" title="Contributeurs de OpenStreetMap">Contributeurs de OpenStreetMap</a> | &copy; <a href="http://www.ouaie.be/" title="http://www.ouaie.be/">Christian Guyette</a>' } ).addTo ( Map );
 				var Routing = L.Routing.extensions( {
-					waypoints: [ L.latLng ( 50.51490,5.47101 ), L.latLng ( 50.50891,5.49330 ) ],
+					waypoints: [ L.latLng ( 50.50879,5.49313 ), L.latLng ( 50.53038,5.57248 ) ],
+					providerKeys : providerKeys,
 					showAlternatives: true,
 					waypointMode : 'snap',
 					fitSelectedRoutes : false,
@@ -97,121 +106,21 @@
 				} ).addTo( Map );
 				L.Routing.errorControl( Routing ).addTo( Map );
 				
-				var options = {
-					GpxXmlDeclaration : true,
-					GpxDate : 2,
-					GpxWaypoints : true,
-					GpxRoute : false,
-					GpxTrack : true
+				var saveKeys = function ( event ) {
+					if ( ! storageAvailable ( ) )
+					{
+						return;
+					}
+					console.log ( "saveKeys 3" );
+					localStorage.setItem ( 'lrm-extensions.graphHopperKey', document.getElementById ( "graphHopperKey" ).value );
+					localStorage.setItem ( 'lrm-extensions.mapzenKey', document.getElementById ( "mapzenKey" ).value );
+					localStorage.setItem ( 'lrm-extensions.mapboxKey', document.getElementById ( "mapboxKey" ).value );
+					window.location.reload ( );
+					
 				};
-				
-				document.getElementById ( "GpxXmlDeclaration" ).checked = true;
-				document.getElementById ( "GpxWaypoints" ).checked = true;
-				document.getElementById ( "GpxRoute" ).checked = false;
-				document.getElementById ( "GpxTrack" ).checked = true;
-				document.getElementById ( "GpxDate0" ).checked = false;
-				document.getElementById ( "GpxDate1" ).checked = false;
-				document.getElementById ( "GpxDate2" ).checked = true;
-				
-				var GpxFile = null;
-				var CoordinatesFile = null;
-				var UpdateGpx = function ( ) {
-					document.getElementById ( "GpxString" ).innerHTML = Routing.getGpxString ( options );
-					try {
-						var GpxData = new File ( [ Routing.getGpxString ( options ) ], { type: 'application/xml' } );
-						if ( GpxFile !== null ) {
-							window.URL.revokeObjectURL ( GpxFile );
-						}
-						GpxFile = window.URL.createObjectURL ( GpxData );
-					}
-					catch ( Error ) {
-						if ( document.getElementById('GpxError') ) {
-							document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
-							document.getElementById('GpxError').style.color = "red";
-						}
-					}
-					
-					if ( GpxFile ) {
-						document.getElementById('downloadGpx').href = GpxFile;
-					}
-					else {
-						document.getElementById( 'HelpGpxFile' ).style.visibility = 'hidden';
-						document.getElementById( 'GpxFile' ).style.visibility = 'hidden';
-					}
-
-					try {
-						var CoordinatesData = new File ( [ Routing.getRouteCoordinates ( ) ], { type: 'text/txt' } );
-						if ( CoordinatesFile !== null ) {
-							window.URL.revokeObjectURL ( CoordinatesFile );
-						}
-						CoordinatesFile = window.URL.createObjectURL ( CoordinatesData );
-					}
-					catch ( Error ) {
-						if ( document.getElementById('GpxError') ) {
-							document.getElementById('GpxError').innerHTML = "Not possible to save to a file with this browser";
-							document.getElementById('GpxError').style.color = "red";
-						}
-					}
-					
-					if ( CoordinatesFile ) {
-						document.getElementById('downloadCoordinates').href = CoordinatesFile;
-					}
-					else {
-						document.getElementById( 'HelpCoordinatesFile' ).style.visibility = 'hidden';
-						document.getElementById( 'CoordinatesFile' ).style.visibility = 'hidden';
-					}
-
-				}
-				
-				Routing.on ( 
-					'gpxchanged',
-					UpdateGpx
-				);
-				document.getElementById ( "GpxXmlDeclaration" ).addEventListener ( 
-					'change', 
-					function ( event ){ 
-						options.GpxXmlDeclaration = event.target.checked;
-						UpdateGpx ( );
-					}
-				);
-				var UpdateDate = function ( event ){ 
-					options.GpxDate = parseInt ( event.target.value );
-					UpdateGpx ( );
-				}
-				document.getElementById ( "GpxDate0" ).addEventListener ( 
-					'change', 
-					UpdateDate
-				);
-				document.getElementById ( "GpxDate1" ).addEventListener ( 
-					'change', 
-					UpdateDate
-				);
-				document.getElementById ( "GpxDate2" ).addEventListener ( 
-					'change', 
-					UpdateDate
-				);
-				document.getElementById ( "GpxWaypoints" ).addEventListener ( 
-					'change', 
-					function ( event ){ 
-						console.log ( 'GpxWaypoints' );
-						options.GpxWaypoints = event.target.checked;
-						UpdateGpx ( );
-					}
-				);
-				document.getElementById ( "GpxRoute" ).addEventListener ( 
-					'change', 
-					function ( event ){ 
-						console.log ( 'GpxRoute' );
-						options.GpxRoute = event.target.checked;
-						UpdateGpx ( );
-					}
-				);
-				document.getElementById ( "GpxTrack" ).addEventListener ( 
-					'change', 
-					function ( event ){ 
-						options.GpxTrack = event.target.checked;
-						UpdateGpx ( );
-					}
+				document.getElementById ( "saveKeys" ).addEventListener ( 
+					'click', 
+					saveKeys
 				);
 			} ());		
 		</script>
