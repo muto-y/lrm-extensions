@@ -134,18 +134,20 @@ Tests to do...
 		*/
 
 		_convertInstructions : function ( instructions ) {
-			
+
 			var signToType = {
-					'-3': 'SharpLeft',
-					'-2': 'Left',
-					'-1': 'SlightLeft',
-					0: 'Straight',
-					1: 'SlightRight',
-					2: 'Right',
-					3: 'SharpRight',
-					4: 'DestinationReached',
+					4: 'DestinationReached', 
 					5: 'WaypointReached',
-					6: 'Roundabout'
+					6: 'Roundabout' 
+				};
+			var signToModifier = {
+					'-3': 'SharpLeft', 
+					'-2': 'Left', 
+					'-1': 'SlightLeft', 
+					0: 'Straight', 
+					1: 'SlightRight', 
+					2: 'Right', 
+					3: 'SharpRight', 
 				};
 			var	result = [ ];
 
@@ -153,6 +155,7 @@ Tests to do...
 				var instruction = instructions [ instrCounter ];
 				result.push (
 					{
+						modifier : signToModifier [ instruction.sign ],
 						type : signToType [ instruction.sign ],
 						text : instruction.text,
 						distance : instruction.distance,

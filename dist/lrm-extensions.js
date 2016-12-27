@@ -2688,18 +2688,20 @@ Tests to do...
 		*/
 
 		_convertInstructions : function ( instructions ) {
-			
+
 			var signToType = {
-					'-3': 'SharpLeft',
-					'-2': 'Left',
-					'-1': 'SlightLeft',
-					0: 'Straight',
-					1: 'SlightRight',
-					2: 'Right',
-					3: 'SharpRight',
-					4: 'DestinationReached',
+					4: 'DestinationReached', 
 					5: 'WaypointReached',
-					6: 'Roundabout'
+					6: 'Roundabout' 
+				};
+			var signToModifier = {
+					'-3': 'SharpLeft', 
+					'-2': 'Left', 
+					'-1': 'SlightLeft', 
+					0: 'Straight', 
+					1: 'SlightRight', 
+					2: 'Right', 
+					3: 'SharpRight', 
 				};
 			var	result = [ ];
 
@@ -2707,6 +2709,7 @@ Tests to do...
 				var instruction = instructions [ instrCounter ];
 				result.push (
 					{
+						modifier : signToModifier [ instruction.sign ],
 						type : signToType [ instruction.sign ],
 						text : instruction.text,
 						distance : instruction.distance,
@@ -3087,7 +3090,7 @@ Tests to do...
 },{"osrm-text-instructions":2,"polyline":9}],13:[function(require,module,exports){
 /*
 +----------------------------------------------------------------------------------------------------------------------+
-| This code is coming from lrm-mapzen by mapzen.                                                                       |
+| This code is mainly coming from lrm-mapzen by mapzen.                                                                |
 | See https://github.com/mapzen/lrm-mapzen                                                                             |
 +----------------------------------------------------------------------------------------------------------------------+
 */
@@ -3108,40 +3111,39 @@ Tests to do...
 				seconds: 's'
 			},
 			language: 'en',			
-			roundingSensitivity: 1,			
-			distanceTemplate: '{value} {unit}'
+			roundingSensitivity : 1,			
+			distanceTemplate : '{value} {unit}',
+			whiteSpace : ' ' // So we can use &nbsp; if needed...
 		},
 
 		initialize : function ( options ) {
 			L.setOptions( this, options );
 		},
 
-		formatDistance : function ( d /* Number (meters) */ ) {
-			var un = this.options.unitNames,
-				v,
-				data;
-			if ( this.options.units === 'imperial' ) {
+		formatDistance : function ( distance ) {
+
 			//valhalla returns distance in km
-				d = d * 1000;
-				d = d / 1.609344;
-				if ( d >= 1000 ) {
+			var data;
+			if ( this.options.units === 'imperial' ) {
+				distance = distance * 1000;
+				distance = distance / 1.609344;
+				if ( distance >= 1000 ) {
 					data = {
-						value: ( this._round ( d ) / 1000 ),
-						unit: un.miles
+						value: ( this._round ( distance ) / 1000 ),
+						unit: this.options.unitNames.miles
 					};
 				} 
 				else {
 					data = {
-						value: this._round ( d / 1.760 ),
-						unit: un.yards
+						value: this._round ( distance / 1.760 ),
+						unit: this.options.unitNames.yards
 					};
 				}
 			} 
 			else {
-				v = d;
 				data = {
-					value: v >= 1 ? v : v * 1000,
-					unit: v >= 1 ? un.kilometers : un.meters
+					value: distance >= 1 ? distance : distance * 1000,
+					unit: distance >= 1 ? this.options.unitNames.kilometers : this.options.unitNames.meters
 				};
 			}
 
@@ -3156,21 +3158,36 @@ Tests to do...
 			return Math.round( d / p ) * p;
 		},
 
-		formatTime: function ( t /* Number (seconds) */ ) {
-			if ( t > 86400 ) {
-				return Math.round( t / 3600) + ' h';
+		formatTime: function ( time /* Number (seconds) */ ) {
+			if ( time > 86400 ) {
+				return Math.round( time / 3600) + 
+					this.options.whiteSpace + 
+					this.options.unitNames.hours;
 			} 
-			else if ( t > 3600 ) {
-				return Math.floor ( t / 3600 ) + ' h ' + Math.round ( ( t % 3600 ) / 60 ) + ' min';
+			else if ( time > 3600 ) {
+				return Math.floor ( time / 3600 ) + 
+					this.options.whiteSpace + 
+					this.options.unitNames.hours +
+					this.options.whiteSpace + 
+					Math.round ( ( time % 3600 ) / 60 ) +
+					this.options.whiteSpace + 
+					this.options.unitNames.minutes ;
 			} 
-			else if ( t > 300 ) {
-				return Math.round ( t / 60 ) + ' min';
+			else if ( time > 300 ) {
+				return Math.round ( time / 60 ) + 
+					this.options.whiteSpace + 
+					this.options.unitNames.minutes ;
 			} 
-			else if ( t > 60) {
-				return Math.floor ( t / 60 ) + ' min' + ( t % 60 !== 0 ? ' ' + ( t % 60 ) + ' s' : '' );
+			else if ( time > 60) {
+				return Math.floor ( time / 60 ) + 
+					this.options.whiteSpace + 
+					this.options.unitNames.minutes +
+					( time % 60 !== 0 ? this.options.whiteSpace + ( time % 60 ) + this.options.whiteSpace +  this.options.unitNames.seconds : '' );
 			} 
 			else {
-				return t + ' s';
+				return time + 
+					this.options.whiteSpace + 
+					this.options.unitNames.seconds ;
 			}
 		},
 
@@ -3179,83 +3196,24 @@ Tests to do...
 			return instr.instruction;
 		},
 
-		getIconName: function(instr, i) {
-		// you can find all Valhalla's direction types at https://github.com/valhalla/odin/blob/master/proto/tripdirections.proto
-			switch (instr.type) {
-				case 0:
-					return 'kNone';
-				case 1:
-					return 'kStart';
-				case 2:
-					return 'kStartRight';
-				case 3:
-					return 'kStartLeft';
-				case 4:
-					return 'kDestination';
-				case 5:
-					return 'kDestinationRight';
-				case 6:
-					return 'kDestinationLeft';
-				case 7:
-					return 'kBecomes';
-				case 8:
-					return 'kContinue';
-				case 9:
-					return 'kSlightRight';
-				case 10:
-					return 'kRight';
-				case 11:
-					return 'kSharpRight';
-				case 12:
-					return 'kUturnRight';
-				case 13:
-					return 'kUturnLeft';
-				case 14:
-					return 'kSharpLeft';
-				case 15:
-					return 'kLeft';
-				case 16:
-					return 'kSlightLeft';
-				case 17:
-					return 'kRampStraight';
-				case 18:
-					return 'kRampRight';
-				case 19:
-					return 'kRampLeft';
-				case 20:
-					return 'kExitRight';
-				case 21:
-					return 'kExitLeft';
-				case 22:
-					return 'kStayStraight';
-				case 23:
-					return 'kStayRight';
-				case 24:
-					return 'kStayLeft';
-				case 25:
-					return 'kMerge';
-				case 26:
-					return 'kRoundaboutEnter';
-				case 27:
-					return 'kRoundaboutExit';
-				case 28:
-					return 'kFerryEnter';
-				case 29:
-					return 'kFerryExit';
-				// lrm-mapzen unifies transit commands and give them same icons
-				case 30:
-				case 31: //'kTransitTransfer'
-				case 32: //'kTransitRemainOn'
-				case 33: //'kTransitConnectionStart'
-				case 34: //'kTransitConnectionTransfer'
-				case 35: //'kTransitConnectionDestination'
-				case 36: //'kTransitConnectionDestination'
-					if ( instr.edited_travel_type ) {
-						return 'kTransit' + this._getCapitalizedName ( instr.edited_travel_type );
-					}
-					else {
-						return 'kTransit';
-					}
+		getIconName: function ( instr, i ) {
+			// you can find all Valhalla's direction types at https://github.com/valhalla/odin/blob/master/proto/tripdirections.proto
+			if ( instr.type < 30 )
+			{
+				return [
+					'kNone', 'kStart', 'kStartRight', 'kStartLeft', 'kDestination', 'kDestinationRight', 'kDestinationLeft', 'kBecomes',
+					'kContinue', 'kSlightRight', 'kRight', 'kSharpRight', 'kUturnRight', 'kUturnLeft', 'kSharpLeft', 'kLeft', 'kSlightLeft',
+					'kRampStraight', 'kRampRight', 'kRampLeft', 'kExitRight', 'kExitLeft', 'kStayStraight',
+					'kStayRight', 'kStayLeft', 'kMerge', 'kRoundaboutEnter', 'kRoundaboutExit', 'kFerryEnter', 'kFerryExit'
+					] [ instr.type ];
+			}
+			else if ( instr.type < 37 ) {
+				if ( instr.edited_travel_type ) {
+					return 'kTransit' + this._getCapitalizedName ( instr.edited_travel_type );
+				}
+				else {
+					return 'kTransit';
+				}
 			}
 		},
 
