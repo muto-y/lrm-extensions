@@ -216,3 +216,233 @@ a#downloadGpx:hover
 {
 	background-image : url('lrm-extensions.img/control/polyline.png');
 }
+.leaflet-routing-icon {
+    -webkit-background-size: 20px 20px !important;
+    background-size: 20px 20px !important;
+    background-repeat: no-repeat !important;
+    margin: 0 !important;
+    content: '' !important;
+    display: inline-block !important;
+    vertical-align: top !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.leaflet-routing-icon-kNone 
+{ 
+	background-image : url('lrm-extensions.img/control/kNone.png');
+}
+.leaflet-routing-icon-kStart 
+{ 
+	background-image : url('lrm-extensions.img/control/kStart.png');
+}
+.leaflet-routing-icon-kStartRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kStartRight.png');
+}
+.leaflet-routing-icon-kStartLeft 
+{
+	background-image : url('lrm-extensions.img/control/kStartLeft.png');
+}
+.leaflet-routing-icon-kDestination 
+{ 
+	background-image : url('lrm-extensions.img/control/kDestination.png');
+}
+.leaflet-routing-icon-kDestinationRight 
+{ 
+	background-image : url('lrm-extensions.img/control/lrm-mapzen-icons.png');
+}
+.leaflet-routing-icon-kDestinationLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kDestinationLeft.png');
+}
+.leaflet-routing-icon-kBecomes 
+{ 
+	background-image : url('lrm-extensions.img/control/kBecomes.png');
+}
+.leaflet-routing-icon-kContinue 
+{ 
+	background-image : url('lrm-extensions.img/control/kContinue.png');
+}
+.leaflet-routing-icon-kSlightRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kSlightRight.png');
+}
+.leaflet-routing-icon-kRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kRight.png');
+}
+.leaflet-routing-icon-kSharpRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kSharpRight.png');
+}
+.leaflet-routing-icon-kUturnRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kUturnRight.png');
+}
+.leaflet-routing-icon-kUturnLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kUturnLeft.png');
+}
+.leaflet-routing-icon-kSharpLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kSharpLeft.png');
+}
+.leaflet-routing-icon-kLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kLeft.png');
+}
+.leaflet-routing-icon-kSlightLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kSlightLeft.png');
+}
+.leaflet-routing-icon-kRampStraight 
+{ 
+	background-image : url('lrm-extensions.img/control/kRampStraight .png');
+}
+.leaflet-routing-icon-kRampRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kRampRight.png');
+}
+.leaflet-routing-icon-kRampLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kRampLeft.png');
+}
+.leaflet-routing-icon-kExitRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kExitRight.png');
+}
+.leaflet-routing-icon-kExitLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kExitLeft.png');
+}
+.leaflet-routing-icon-kStayStraight 
+{ 
+	background-image : url('lrm-extensions.img/control/kStayStraight.png');
+}
+.leaflet-routing-icon-kStayRight 
+{ 
+	background-image : url('lrm-extensions.img/control/kStayRight.png');
+}
+.leaflet-routing-icon-kStayLeft 
+{ 
+	background-image : url('lrm-extensions.img/control/kStayLeft.png');
+}
+.leaflet-routing-icon-kMerge 
+{ 
+	background-image : url('lrm-extensions.img/control/kMerge.png');
+}
+.leaflet-routing-icon-kRoundaboutEnter 
+{ 
+	background-image : url('lrm-extensions.img/control/kRoundaboutEnter.png');
+}
+.leaflet-routing-icon-kRoundaboutExit 
+{ 
+	background-image : url('lrm-extensions.img/control/kRoundaboutExit.png');
+}
+.leaflet-routing-icon-kFerryEnter 
+{ 
+	background-image : url('lrm-extensions.img/control/kFerryEnter.png');
+}
+.leaflet-routing-icon-kFerryExit 
+{ 
+	background-image : url('lrm-extensions.img/control/kFerryExit.png');
+}
+.leaflet-routing-icon-kTransitBus 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitBus.png');
+}
+.leaflet-routing-icon-kTransitCable_car 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitCable_car.png');
+}
+.leaflet-routing-icon-kTransitFerry 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitFerry.png');
+}
+.leaflet-routing-icon-kTransitFunicular 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitFunicular.png');
+}
+.leaflet-routing-icon-kTransitGondola 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitFunicular.png');
+}
+.leaflet-routing-icon-kTransitMetro 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitMetro.png');
+}
+.leaflet-routing-icon-kTransitRail 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitRail.png');
+}
+.leaflet-routing-icon-kTransitTram 
+{ 
+	background-image : url('lrm-extensions.img/control/kTransitTram.png');
+}
+
+
+
+
+
+
+.leaflet-routing-icon-continue         
+{
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kContinue.png') !important;
+}
+.leaflet-routing-icon-sharp-right
+{
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kSharpRight.png') !important;
+}
+.leaflet-routing-icon-turn-right       
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kRight.png') !important;
+}
+.leaflet-routing-icon-bear-right       
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kSlightRight.png') !important;
+}
+.leaflet-routing-icon-u-turn           
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kUturnLeft.png') !important;
+}
+.leaflet-routing-icon-sharp-left       
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kSharpLeft.png') !important;
+}
+.leaflet-routing-icon-turn-left        
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kLeft.png') !important;
+}
+.leaflet-routing-icon-bear-left        
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kSlightLeft.png') !important;
+}
+.leaflet-routing-icon-depart 
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kStart.png') !important;
+}
+.leaflet-routing-icon-enter-roundabout 
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kRoundaboutEnter.png') !important;
+}
+.leaflet-routing-icon-arrive           
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kDestination.png') !important;
+}
+.leaflet-routing-icon-via              
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kVia.png') !important;
+}
