@@ -74,7 +74,7 @@ Tests to do...
 			};
 
 			if ( ! this.options.suppressDemoServerWarning && this.options.serviceUrl.indexOf('//router.project-osrm.org') >= 0 && 'osrm' === this.options.provider ) {
-				alert ('You are using OSRM\'s demo server. ' +
+				console.log ('You are using OSRM\'s demo server. ' +
 					'Please note that it is **NOT SUITABLE FOR PRODUCTION USE**.\n' +
 					'Refer to the demo server\'s usage policy: ' +
 					'https://github.com/Project-OSRM/osrm-backend/wiki/Api-usage-policy\n\n' +
@@ -193,7 +193,7 @@ Tests to do...
 			var mapboxOsrmRouteConverter = require ( './L.Routing.Extensions.MapboxOsrmRouteConverter' ) ( this.options ) ;
 			var routes = mapboxOsrmRouteConverter.createRoutes ( response, inputWaypoints, options );
 
-			// tmp // this._saveHintData( response.waypoints, inputWaypoints );
+			// this._saveHintData( response.waypoints, inputWaypoints );
 
 			callback.call ( context, null, routes );
 		},
@@ -247,16 +247,9 @@ Tests to do...
 			var mapzenRouteConverter = require ( './L.Routing.Extensions.MapzenRouteConverter' ) ( this.options ) ;
 			var routes = mapzenRouteConverter.createRoutes ( response, inputWaypoints, options );
 
-			// only versions <4.5.0 will support this flag
-			/* tmp 
-			if (response.hint_data) {
-				this._saveHintData(response.hint_data, inputWaypoints);
-			}
-			*/
-			
 			callback.call ( context, null, routes );
 		},
-	
+
 		/*
 		--- _routeDone method --------------------------------------------------------------------------------------------------
 		------------------------------------------------------------------------------------------------------------------------
@@ -318,7 +311,6 @@ Tests to do...
 				this.options.language +
 				'&vehicle=' +
 				vehicle;
-			//https://graphhopper.com/api/1/route?point=50.50901,5.49351&point=50.50959,5.49657&instructions=true&type=json&key=xxxxxxxxxxxxxxxxxxxxxxxxxxx&locale=fr&vehicle=car
 		},
 		
 		/*
@@ -381,7 +373,6 @@ Tests to do...
 				( useHints ? '&hints=' + hints.join(';') : '' ) +
 				( options.allowUTurns ? '&continue_straight=' + !options.allowUTurns : '') +
 				( 'mapbox' === this.options.provider ? '&access_token=' + this.options.providerKeys.Mapbox : '' );
-				// https://api.mapbox.com/directions/v5/mapbox/driving/5.493505,50.509012;5.496565103530885,50.509585337052286?overview=false&alternatives=true&steps=true&access_token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 		},
 		
 		/*
@@ -436,7 +427,6 @@ Tests to do...
 				locationsString + 
 				'&api_key=' + 
 				this.options.providerKeys.Mapzen;
-			// https://valhalla.mapzen.com/route?json={"locations":[{"lat":50.50901,"lon":5.49351,"type":"break"},{"lat":50.509585337052286,"lon":5.496929883956909,"type":"break"}],"costing":"auto","costing_options":{"bicycle":{"bicycle_type":"Mountain","cycling_speed":"20.0","use_roads":"0","use_hills":"1"}},"directions_options":{"language":"fr"}}&api_key=xxxxxxx
 		},
 		
 		/*

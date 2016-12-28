@@ -250,7 +250,7 @@ a#downloadGpx:hover
 }
 .leaflet-routing-icon-kDestinationRight 
 { 
-	background-image : url('lrm-extensions.img/control/lrm-mapzen-icons.png');
+	background-image : url('lrm-extensions.img/control/kDestinationRight.png');
 }
 .leaflet-routing-icon-kDestinationLeft 
 { 
@@ -298,7 +298,7 @@ a#downloadGpx:hover
 }
 .leaflet-routing-icon-kRampStraight 
 { 
-	background-image : url('lrm-extensions.img/control/kRampStraight .png');
+	background-image : url('lrm-extensions.img/control/kRampStraight.png');
 }
 .leaflet-routing-icon-kRampRight 
 { 
@@ -439,4 +439,9 @@ a#downloadGpx:hover
 { 
 	background-position: 0px 0px !important;
 	background-image : url('lrm-extensions.img/control/kVia.png') !important;
+}
+.leaflet-routing-icon-undefined              
+{ 
+	background-position: 0px 0px !important;
+	background-image : url('lrm-extensions.img/control/kUndefined.png') !important;
 }

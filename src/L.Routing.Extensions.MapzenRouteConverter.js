@@ -96,7 +96,7 @@ Tests to do...
 
 			var alts = [
 				{
-					name : this._trimLocationKey ( inputWaypoints [ 0 ].latLng ) + " , " + this._trimLocationKey ( inputWaypoints [ 1 ].latLng ) ,
+					name : '',
 					unit : response.trip.units,
 					costing : routeOptions.costing,
 					coordinates : coordinates,
@@ -144,14 +144,14 @@ Tests to do...
 		*/
 
 		_toWaypoints: function ( inputWaypoints, responseWaypoints ) {
-
+		
 			var wayPoints = [ ];
 			for ( var counter = 0; counter < responseWaypoints.length; counter ++) {
 				wayPoints.push (
 					L.Routing.waypoint (
 						L.latLng ( [ responseWaypoints [ counter ].lat, responseWaypoints [ counter ].lon ] ),
-						"name",
-						{}
+						inputWaypoints [ counter ].name,
+						inputWaypoints [ counter ].options
 					)
 				);
 			}

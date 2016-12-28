@@ -553,7 +553,6 @@ Tests to do...
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			// route is saved for the GPX and polyline
 			this._gpxRoute = routes.route;
-			
 			// GPX file
 			this._prepareGpxLink ( );
 			this.fire ( 'gpxchanged' );
@@ -736,119 +735,183 @@ Tests to do...
 			options.RouteElement = options.RouteElement || 'div';
 			options.RouteHeader = options.RouteHeader || '<h1>Itinéraire:</h1>';
 			options.RouteElementId = options.RouteElementId || 'Route';
-			options.RouteSummaryTemplate = options.RouteSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }&nbsp;-&nbsp;Temps&nbsp;:&nbsp;{ Time }</div>';
-			options.CumDistanceTemplate = options.CumDistanceTemplate || '<div class="Route-CumDistance"> Distance cumulée&nbsp;:&nbsp;environ&nbsp;{ CumDistance }<div>';
-			// OSRM, GraphHopper and Mapbox only:
-			options.RouteTextInstructionTemplate = options.RouteTextInstructionTemplate || '<div class="Route-TextInstruction">{TextInstruction}</div>'; 
-			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Ensuite, continuez pendant environ {NextDistance}</div>'; 
-			// Mapzen only:
-			options.RoutePreInstructionTemplate = options.RoutePreInstructionTemplate || '<div class="Route-PreInstruction">{PreInstruction}</div>'; 
-			options.RoutePostInstructionTemplate = options.RoutePostInstructionTemplate || '<div class="Route-PostInstruction">{PostInstruction}</div>'; 
-
+			options.RouteDistanceSummaryTemplate = options.RouteDistanceSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }</div>';
+			options.RouteTimeSummaryTemplate = options.RouteTimeSummaryTemplate || '<div class="Route-Summary">Temps&nbsp;:&nbsp;{ Time }</div>';
+			options.RouteAscendSummaryTemplate = options.RouteAscendSummaryTemplate || '<div class="Route-Summary">Montée&nbsp;:&nbsp;{ Ascend }</div>';
+			options.RouteDescendSummaryTemplate = options.RouteDescendSummaryTemplate || '<div class="Route-Summary">Descente&nbsp;:&nbsp;{ Descend }</div>';
+			options.RouteTextInstructionTemplate = options.RouteTextInstructionTemplate || '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>'; 
+			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance jusqu&apos;au prochain point: {NextDistance}</div>'; 
+			options.RouteNextTimeTemplate = options.RouteNextTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps jusqu&apos;au prochain point: {NextTime}</div>'; 
+			options.RouteCumulatedDistanceTemplate = options.RouteCumulatedDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance cumulée jusqu&apos;à ce point: {CumulatedDistance}</div>'; 
+			options.RouteCumulatedTimeTemplate = options.RouteCumulatedTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps cumulé jusqu&apos;à ce point: {CumulatedTime}</div>'; 
+			options.RouteProviderTemplate = options.RouteProviderTemplate || '<div class="Route-Provider">Ce trajet a été calculé par <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
 			var RouteElement = document.createElement ( options.RouteElement );
 			RouteElement.id = options.RouteElementId;
 			RouteElement.innerHTML = options.RouteHeader;
-				
+
 			if ( this._gpxRoute && this._gpxRoute.instructions && 0 < this._gpxRoute.instructions.length ) {
-				var SummaryElement = document.createElement ( 'div' );
-				RouteElement.appendChild ( SummaryElement );
-				SummaryElement.outerHTML = L.Util.template (
-					options.RouteSummaryTemplate,
+
+				var distanceSummaryElement = document.createElement ( 'div' );
+				RouteElement.appendChild ( distanceSummaryElement );
+				distanceSummaryElement.outerHTML = L.Util.template (
+					options.RouteDistanceSummaryTemplate,
 					{
 						'Distance' : this._formatter.formatDistance ( this._gpxRoute.summary.totalDistance ),
+					}
+				);
+				var timeSummaryElement = document.createElement ( 'div' );
+				RouteElement.appendChild ( timeSummaryElement );
+				timeSummaryElement.outerHTML = L.Util.template (
+					options.RouteTimeSummaryTemplate,
+					{
 						'Time' : this._formatter.formatTime ( this._gpxRoute.summary.totalTime )
 					}
 				);
-				var Counter = 0;
-				var CumDistance = 0;
-				// mapzen : instructions.instruction
-				// graphhopper & OSRM: instructions.text
-				
-				for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ ) {
-					switch ( this.options.provider ) {
-						case 'graphhopper':
-							// GraphHopper text
-							if ( this._gpxRoute.instructions [ Counter ].text ) {
-								var TextInstructionElement = document.createElement ( 'div' );
-								RouteElement.appendChild ( TextInstructionElement );
-								TextInstructionElement.outerHTML = L.Util.template (
-									options.RouteTextInstructionTemplate,
-									{
-										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._gpxRoute.instructions [ Counter ].text )
-									}
-								);
-								if ( 0 < this._gpxRoute.instructions [ Counter ].distance ) {
-									var NextDistanceElement = document.createElement ( 'div' );
-									RouteElement.appendChild ( NextDistanceElement );
-									NextDistanceElement.outerHTML = L.Util.template (
-										options.RouteNextDistanceTemplate,
-										{
-											'NextDistance' : this._formatter.formatDistance ( Math.round ( this._gpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
-										}
-									);
-								}
-							}
-							break;
-						case 'mapzen':
-							// Mapzen pre-instruction
-							if ( this._gpxRoute.instructions [ Counter ].verbal_pre_transition_instruction ) {
-								var PreInstructionElement = document.createElement ( 'div' );
-								RouteElement.appendChild ( PreInstructionElement );
-								PreInstructionElement.outerHTML = L.Util.template (
-									options.RoutePreInstructionTemplate,
-									{
-										'PreInstruction' : '' + ( Counter + 1 ) + ' - ' + this._toXmlString ( this._gpxRoute.instructions [ Counter ].verbal_pre_transition_instruction )
-									}
-								);
-							}
-							// Mapzen post-instruction
-							if ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction ) {
-								var PostInstructionElement = document.createElement ( 'div' );
-								RouteElement.appendChild ( PostInstructionElement );
-								PostInstructionElement.outerHTML = L.Util.template (
-									options.RoutePostInstructionTemplate,
-									{
-										'PostInstruction' : this._toXmlString ( this._gpxRoute.instructions [ Counter ].verbal_post_transition_instruction )
-									}
-								);
-							}
-							break;
-						case 'osrm':
-						case 'mapbox':
-							var MapboxTextInstructionElement = document.createElement ( 'div' );
-							RouteElement.appendChild ( MapboxTextInstructionElement );
-							MapboxTextInstructionElement.outerHTML = L.Util.template (
-									options.RouteTextInstructionTemplate,
-									{
-										'TextInstruction' : '' + ( Counter + 1 ) + ' - ' + this._formatter.formatInstruction ( this._gpxRoute.instructions [ Counter ] )
-									}
-								);
-							if ( 0 < this._gpxRoute.instructions [ Counter ].distance ) {
-								var MapboxNextDistanceElement = document.createElement ( 'div' );
-								RouteElement.appendChild ( MapboxNextDistanceElement );
-								MapboxNextDistanceElement.outerHTML = L.Util.template (
-									options.RouteNextDistanceTemplate,
-									{
-										'NextDistance' : this._formatter.formatDistance ( Math.round ( this._gpxRoute.instructions [ Counter ].distance * 1000 ) / 1000 )
-									}
-								);
-							}
-							break;
-						default:
-							break;
+				if ( this._gpxRoute.summary.ascend && -1 < this._gpxRoute.summary.ascend )
+				{
+					var ascentSummaryElement = document.createElement ( 'div' );
+					RouteElement.appendChild ( ascentSummaryElement );
+					ascentSummaryElement.outerHTML = L.Util.template (
+						options.RouteAscendSummaryTemplate,
+						{
+							'Ascend' : this._formatter.formatDistance ( this._gpxRoute.summary.ascend )
+						}
+					);
+				}
+				if ( this._gpxRoute.summary.descend && -1 < this._gpxRoute.summary.descend )
+				{
+					var descendSummaryElement = document.createElement ( 'div' );
+					RouteElement.appendChild ( descendSummaryElement );
+					descendSummaryElement.outerHTML = L.Util.template (
+						options.RouteDescendSummaryTemplate,
+						{
+							'Descend' : this._formatter.formatDistance ( this._gpxRoute.summary.descend ),
+						}
+					);
+				}
+					
+				var haveExactCumulatedDistance = true;
+				var haveExactCumulatedTime = true;
+				var cumulatedDistance = 0;
+				var cumulatedTime = 0;
+				var instrCounter = 0;
+				for ( instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter++ ) {
+					this._gpxRoute.instructions [ instrCounter ].cumulatedDistance = cumulatedDistance;
+					if ( this._gpxRoute.instructions [ instrCounter ].distance )
+					{
+						cumulatedDistance += this._gpxRoute.instructions [ instrCounter ].distance;
 					}
-					if ( 0 < CumDistance ) {
-						var CumDistanceElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( CumDistanceElement );
-						CumDistanceElement.outerHTML = L.Util.template (
-							options.CumDistanceTemplate,
+					/*
+					else{
+						haveExactCumulatedDistance = false;
+					}
+					*/
+					this._gpxRoute.instructions [ instrCounter ].cumulatedTime = cumulatedTime;
+					if ( this._gpxRoute.instructions [ instrCounter ].time )
+					{
+						cumulatedTime += this._gpxRoute.instructions [ instrCounter ].time;
+					}
+					else {
+						haveExactCumulatedTime = false;
+					}
+					if ( this._gpxRoute.instructions [ instrCounter ].instruction )
+					{
+						// mapzen comes with 'instructions' and not 'text'
+						this._gpxRoute.instructions [ instrCounter ].text = this._gpxRoute.instructions [ instrCounter ].instruction;
+					}
+				}
+
+				for ( instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter++ ) {
+					// text
+					if ( this._gpxRoute.instructions [ instrCounter ].text ) {
+						var TextInstructionElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( TextInstructionElement );
+						TextInstructionElement.outerHTML = L.Util.template (
+							options.RouteTextInstructionTemplate,
 							{
-								'CumDistance' : this._formatter.formatDistance ( Math.round ( CumDistance * 1000 ) / 1000 )
+								'Number' : '' + ( instrCounter + 1 ),
+								'IconClass' : 'leaflet-routing-icon-' + this._formatter.getIconName ( this._gpxRoute.instructions [ instrCounter ], instrCounter ) + '-big',
+								'TextInstruction' : ' - ' + this._toXmlString ( this._gpxRoute.instructions [ instrCounter ].text )
 							}
 						);
 					}
-					CumDistance += this._gpxRoute.instructions [ Counter ].distance;
-				} // end for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ )
+					
+					
+					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].cumulatedDistance ) {
+						// cumulated distance
+						var CumulatedDistanceElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( CumulatedDistanceElement );
+						CumulatedDistanceElement.outerHTML = L.Util.template (
+							options.RouteCumulatedDistanceTemplate,
+							{
+								'CumulatedDistance' : this._formatter.formatDistance ( this._gpxRoute.instructions [ instrCounter ].cumulatedDistance )
+							}
+						);
+					}
+					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].cumulatedTime ) {
+						// cumulated time
+						var CumulatedTimeElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( CumulatedTimeElement );
+						CumulatedTimeElement.outerHTML = L.Util.template (
+							options.RouteCumulatedTimeTemplate,
+							{
+								'CumulatedTime' : this._formatter.formatTime ( this._gpxRoute.instructions [ instrCounter ].cumulatedTime )
+							}
+						);
+					}
+					
+					
+					
+					
+					
+					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].distance ) {
+						// distance
+						var NextDistanceElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( NextDistanceElement );
+						NextDistanceElement.outerHTML = L.Util.template (
+							options.RouteNextDistanceTemplate,
+							{
+								'NextDistance' : this._formatter.formatDistance ( this._gpxRoute.instructions [ instrCounter ].distance )
+							}
+						);
+					}
+					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].time ) {
+						// time
+						var NextTimeElement = document.createElement ( 'div' );
+						RouteElement.appendChild ( NextTimeElement );
+						NextTimeElement.outerHTML = L.Util.template (
+							options.RouteNextTimeTemplate,
+							{
+								'NextTime' : this._formatter.formatTime ( this._gpxRoute.instructions [ instrCounter ].time )
+							}
+						);
+					}
+				} 
+				var Provider = 'OSRM';
+				var ProviderUrl = 'http://project-osrm.org/';
+				switch ( this.getProvider ( ) ) {
+					case 'graphhopper':
+						Provider = 'GraphHopper';
+						ProviderUrl = 'http://www.graphhopper.com/'; 
+						break;
+					case 'mapzen':
+						Provider = 'Mapzen';
+						ProviderUrl = 'http://www.mapzen.com/'; 
+						break;
+					case 'mapbox':
+						Provider = 'Mapbox';
+						ProviderUrl = 'http://www.mapbox.com/'; 
+						break;
+				}
+				var ProviderElement = document.createElement ( 'div' );
+				RouteElement.appendChild ( ProviderElement );
+				ProviderElement.outerHTML = L.Util.template (
+					options.RouteProviderTemplate,
+					{
+						'ProviderUrl' : ProviderUrl,
+						'Provider': Provider
+					}
+				);
 			}
 			return RouteElement;
 		},

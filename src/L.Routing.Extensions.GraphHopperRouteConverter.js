@@ -76,11 +76,13 @@ Tests to do...
 						summary : {
 							totalDistance: path.distance,
 							totalTime: path.time / 1000,
+							descend : ( path.descend ? path.descend : -1 ),
+							ascend : ( path.ascend ? path.ascend : -1 )
 						},
 						inputWaypoints : inputWaypoints,
 						waypoints : mappedWaypoints.waypoints, // added wwwouaiebe
 						actualWaypoints : mappedWaypoints.waypoints,
-						waypointIndices : mappedWaypoints.waypointIndices
+						waypointIndices : mappedWaypoints.waypointIndices,
 					}
 				);
 			}
