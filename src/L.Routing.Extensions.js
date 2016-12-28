@@ -394,9 +394,6 @@ Tests to do...
 						if ( typeof module !== 'undefined' && module.exports ) {
 							lineOptions = require ('./L.Routing.Extensions.Dialogs' )( lineOptions, this._map, this );
 						}
-						else {
-							lineOptions = polylineDialog ( lineOptions, this._map, this );
-						}
 					},
 					this
 				)
@@ -434,9 +431,6 @@ Tests to do...
 				if ( typeof module !== 'undefined' && module.exports ) {
 					PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
 				}
-				else {
-					PolylineMenu = polylineMenu;
-				}
 
 				L.DomEvent.on ( 
 					polyline,
@@ -469,6 +463,12 @@ Tests to do...
 			}
 		},
 		
+		/*
+		--- addPolyline method -------------------------------------------------------------------------------------------------
+		This method add a polyline to the map and to the layergroup
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		addPolyline : function ( pnts, options, name ) {
 			var polyline = L.polyline ( pnts, options );	
 			if ( 0 < name.length ) {
@@ -479,9 +479,6 @@ Tests to do...
 			var PolylineMenu;
 			if ( typeof module !== 'undefined' && module.exports ) {
 				PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
-			}
-			else {
-				PolylineMenu = polylineMenu;
 			}
 
 			L.DomEvent.on ( 
@@ -567,20 +564,20 @@ Tests to do...
 		_prepareGpxLink : function ( ) {
 			// gpx file is prepared
 			// try... catch is needed because some browsers don't implement window.URL.createObjectURL correctly :-( 
-			var GpxFile = null;
+			var gpxFile = null;
 
 			try {
-				var GpxData = new File ( [ this.getGpxString ( ) ], { type: 'application/xml' } );
-				if ( GpxFile !== null ) {
-					window.URL.revokeObjectURL ( GpxFile );
+				var gpxData = new File ( [ this.getGpxString ( ) ], { type: 'application/xml' } );
+				if ( gpxFile !== null ) {
+					window.URL.revokeObjectURL ( gpxFile );
 				}
-				GpxFile = window.URL.createObjectURL ( GpxData );
+				gpxFile = window.URL.createObjectURL ( gpxData );
 			}
 			catch ( Error ) {
 			}
 			
-			if ( GpxFile ) {
-				document.getElementById( 'downloadGpx').href = GpxFile;
+			if ( gpxFile ) {
+				document.getElementById( 'downloadGpx').href = gpxFile;
 			}
 			else {
 				document.getElementById( 'downloadGpx' ).style.visibility = 'hidden';
@@ -608,119 +605,119 @@ Tests to do...
 			if ( undefined === options ) {
 				options = options || {};
 			}
-			if ( undefined === options.GpxXmlDeclaration )
+			if ( undefined === options.gpxXmlDeclaration )
 			{
-				options.GpxXmlDeclaration = true;
+				options.gpxXmlDeclaration = true;
 			}
-			if ( undefined === options.GpxDate )
+			if ( undefined === options.gpxDate )
 			{
-				options.GpxDate = 2;
+				options.gpxDate = 2;
 			}
-			if ( undefined === options.GpxWaypoints )
+			if ( undefined === options.gpxWaypoints )
 			{
-				options.GpxWaypoints = true;
+				options.gpxWaypoints = true;
 			}
 			if ( undefined === options.gpxRoute )
 			{
 				options.gpxRoute = true;
 			}
-			if ( undefined === options.GpxTrack )
+			if ( undefined === options.gpxTrack )
 			{
-				options.GpxTrack = true;
+				options.gpxTrack = true;
 			}
 
-			var Tab0 = "\n";
-			var Tab1 = "\n\t";
-			var Tab2 = "\n\t\t";
-			var Tab3 = "\n\t\t\t";
+			var tab0 = "\n";
+			var tab1 = "\n\t";
+			var tab2 = "\n\t\t";
+			var tab3 = "\n\t\t\t";
 
-			var TimeStamp;
-			switch ( options.GpxDate ) {
+			var timeStamp;
+			switch ( options.gpxDate ) {
 				case 0 :
-					TimeStamp = "";
+					timeStamp = "";
 					break;
 				case 1 :
-					TimeStamp = "time='1970-01-01T00:00:00.000Z' ";
+					timeStamp = "time='1970-01-01T00:00:00.000Z' ";
 					break;
 				default :
-					TimeStamp = "time='" + new Date ( ).toISOString ( ) + "' ";
+					timeStamp = "time='" + new Date ( ).toISOString ( ) + "' ";
 					break;
 			}
 			
-			var GPXString = "";
+			var gpxString = "";
 			
-			if ( options.GpxXmlDeclaration ) {
-				GPXString = "<?xml version='1.0'?>" + Tab0;
+			if ( options.gpxXmlDeclaration ) {
+				gpxString = "<?xml version='1.0'?>" + tab0;
 			}
-			GPXString += "<gpx xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xsi:schemaLocation='http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd' version='1.1' creator='Leaflet-Routing-Gpx'>";
+			gpxString += "<gpx xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xsi:schemaLocation='http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd' version='1.1' creator='Leaflet-Routing-Gpx'>";
 			if ( this._gpxRoute ) {
-				var Counter = 0;
-				if ( this._gpxRoute.waypoints && options.GpxWaypoints ) {
-					for ( Counter = 0; Counter < this._gpxRoute.waypoints.length; Counter ++ ) {
-						GPXString += 
-							Tab1 + "<wpt lat='" + 
-							this._gpxRoute.waypoints [ Counter ].latLng.lat +
+				var counter = 0;
+				if ( this._gpxRoute.waypoints && options.gpxWaypoints ) {
+					for ( counter = 0; counter < this._gpxRoute.waypoints.length; counter ++ ) {
+						gpxString += 
+							tab1 + "<wpt lat='" + 
+							this._gpxRoute.waypoints [ counter ].latLng.lat +
 							"' lon='" +
-							this._gpxRoute.waypoints [ Counter ].latLng.lng +
+							this._gpxRoute.waypoints [ counter ].latLng.lng +
 							"' " +
-							TimeStamp +
+							timeStamp +
 							"name='" +
-							Counter +
+							counter +
 							"' />";
 					}
 				}
 				if ( this._gpxRoute.coordinates && 0 < this._gpxRoute.coordinates.length  ) {
 					if ( options.gpxRoute  ) {
-						GPXString += Tab1 + "<rte>";
+						gpxString += tab1 + "<rte>";
 						if ( this._gpxRoute.instructions && 0 < this._gpxRoute.instructions.length ) {
-							for ( Counter = 0; Counter < this._gpxRoute.instructions.length; Counter++ ) {
-								GPXString +=
-									Tab2 + "<rtept lat='" + 
+							for ( counter = 0; counter < this._gpxRoute.instructions.length; counter++ ) {
+								gpxString +=
+									tab2 + "<rtept lat='" + 
 									( 
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lat ? 
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lat : 
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ][ 0 ] ) +
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ].lat ? 
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ].lat : 
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ][ 0 ] ) +
 									"' lon='" +
 									(
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lng ?
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ].lng :
-										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ Counter ].index ][ 1 ] ) +
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ].lng ?
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ].lng :
+										this._gpxRoute.coordinates [ this._gpxRoute.instructions [ counter ].index ][ 1 ] ) +
 									"' " +
-									TimeStamp +
+									timeStamp +
 									"name='" +
-									Counter +
+									counter +
 									"' " +
 									"desc='" +
-									this._toXmlString ( this._formatter.formatInstruction ( this._gpxRoute.instructions [ Counter ] ) )  +
+									this._toXmlString ( this._formatter.formatInstruction ( this._gpxRoute.instructions [ counter ] ) )  +
 									"' />" ;
 							}
 						}
-						GPXString += Tab1 + "</rte>";
+						gpxString += tab1 + "</rte>";
 					}
 
-					if ( options.GpxTrack ) {
-						GPXString += Tab1 + "<trk>";
-						GPXString += Tab2 + "<trkseg>";
-						for ( Counter = 0; Counter < this._gpxRoute.coordinates.length; Counter ++ ) {
-							GPXString +=
-								Tab3 + "<trkpt lat='" + 
-								( this._gpxRoute.coordinates [ Counter ].lat ? this._gpxRoute.coordinates [ Counter ].lat : this._gpxRoute.coordinates [ Counter ][ 0 ] ) +
+					if ( options.gpxTrack ) {
+						gpxString += tab1 + "<trk>";
+						gpxString += tab2 + "<trkseg>";
+						for ( counter = 0; counter < this._gpxRoute.coordinates.length; counter ++ ) {
+							gpxString +=
+								tab3 + "<trkpt lat='" + 
+								( this._gpxRoute.coordinates [ counter ].lat ? this._gpxRoute.coordinates [ counter ].lat : this._gpxRoute.coordinates [ counter ][ 0 ] ) +
 								"' lon='" +
-								( this._gpxRoute.coordinates [ Counter ].lng ? this._gpxRoute.coordinates [ Counter ].lng : this._gpxRoute.coordinates [ Counter ][ 1 ] ) +
+								( this._gpxRoute.coordinates [ counter ].lng ? this._gpxRoute.coordinates [ counter ].lng : this._gpxRoute.coordinates [ counter ][ 1 ] ) +
 								"' " +
-								TimeStamp +
+								timeStamp +
 								"name='" +
-								Counter +
+								counter +
 								"' />";
 						}
-						GPXString += Tab2 + "</trkseg>";				
-						GPXString += Tab1 + "</trk>";
+						gpxString += tab2 + "</trkseg>";				
+						gpxString += tab1 + "</trk>";
 					}
 				}
 			}
-			GPXString += Tab0 + "</gpx>";
+			gpxString += tab0 + "</gpx>";
 
-			return GPXString;
+			return gpxString;
 		},
 		
 		/*
@@ -732,37 +729,54 @@ Tests to do...
 		getRouteHTMLElement : function ( options ) {
 			
 			options = options || {};
-			options.RouteElement = options.RouteElement || 'div';
-			options.RouteHeader = options.RouteHeader || '<h1>Itinéraire:</h1>';
-			options.RouteElementId = options.RouteElementId || 'Route';
-			options.RouteDistanceSummaryTemplate = options.RouteDistanceSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }</div>';
-			options.RouteTimeSummaryTemplate = options.RouteTimeSummaryTemplate || '<div class="Route-Summary">Temps&nbsp;:&nbsp;{ Time }</div>';
-			options.RouteAscendSummaryTemplate = options.RouteAscendSummaryTemplate || '<div class="Route-Summary">Montée&nbsp;:&nbsp;{ Ascend }</div>';
-			options.RouteDescendSummaryTemplate = options.RouteDescendSummaryTemplate || '<div class="Route-Summary">Descente&nbsp;:&nbsp;{ Descend }</div>';
-			options.RouteTextInstructionTemplate = options.RouteTextInstructionTemplate || '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>'; 
-			options.RouteNextDistanceTemplate = options.RouteNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance jusqu&apos;au prochain point: {NextDistance}</div>'; 
-			options.RouteNextTimeTemplate = options.RouteNextTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps jusqu&apos;au prochain point: {NextTime}</div>'; 
-			options.RouteCumulatedDistanceTemplate = options.RouteCumulatedDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance cumulée jusqu&apos;à ce point: {CumulatedDistance}</div>'; 
-			options.RouteCumulatedTimeTemplate = options.RouteCumulatedTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps cumulé jusqu&apos;à ce point: {CumulatedTime}</div>'; 
-			options.RouteProviderTemplate = options.RouteProviderTemplate || '<div class="Route-Provider">Ce trajet a été calculé par <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
-			var RouteElement = document.createElement ( options.RouteElement );
-			RouteElement.id = options.RouteElementId;
-			RouteElement.innerHTML = options.RouteHeader;
+			options.routeElement = options.routeElement || 'div';
+			options.routeHeader = options.routeHeader || '<h1>Itinéraire&nbsp;{TransitMode}&nbsp;:</h1>';
+			options.routeElementId = options.routeElementId || 'Route';
+			options.routeDistanceSummaryTemplate = options.routeDistanceSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }</div>';
+			options.routeTimeSummaryTemplate = options.routeTimeSummaryTemplate || '<div class="Route-Summary">Temps&nbsp;:&nbsp;{ Time }</div>';
+			options.routeAscendSummaryTemplate = options.routeAscendSummaryTemplate || '<div class="Route-Summary">Montée&nbsp;:&nbsp;{ Ascend }</div>';
+			options.routeDescendSummaryTemplate = options.routeDescendSummaryTemplate || '<div class="Route-Summary">Descente&nbsp;:&nbsp;{ Descend }</div>';
+			options.routeTextInstructionTemplate = options.routeTextInstructionTemplate || '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>'; 
+			options.routeNextDistanceTemplate = options.routeNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance jusqu&apos;au prochain point: {NextDistance}</div>'; 
+			options.routeNextTimeTemplate = options.routeNextTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps jusqu&apos;au prochain point: {NextTime}</div>'; 
+			options.routeCumulatedDistanceTemplate = options.routeCumulatedDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance cumulée jusqu&apos;à ce point: {CumulatedDistance}</div>'; 
+			options.routeCumulatedTimeTemplate = options.routeCumulatedTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps cumulé jusqu&apos;à ce point: {CumulatedTime}</div>'; 
+			options.routeProviderTemplate = options.routeProviderTemplate || '<div class="Route-Provider">Ce trajet a été calculé par <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
+			var routeElement = document.createElement ( options.routeElement );
+			routeElement.id = options.routeElementId;
+			var transitMode;
+			switch ( this.getTransitMode ( ) ) {
+				case 'bike':
+					transitMode = 'vélo';
+					break;
+				case 'pedestrian':
+					transitMode = 'piéton';
+					break;
+				case 'car':
+					transitMode = 'voiture';
+					break;
+			}
+			routeElement.innerHTML = L.Util.template (
+				options.routeHeader,
+				{
+					'TransitMode' : transitMode
+				}
+			);
 
 			if ( this._gpxRoute && this._gpxRoute.instructions && 0 < this._gpxRoute.instructions.length ) {
 
 				var distanceSummaryElement = document.createElement ( 'div' );
-				RouteElement.appendChild ( distanceSummaryElement );
+				routeElement.appendChild ( distanceSummaryElement );
 				distanceSummaryElement.outerHTML = L.Util.template (
-					options.RouteDistanceSummaryTemplate,
+					options.routeDistanceSummaryTemplate,
 					{
 						'Distance' : this._formatter.formatDistance ( this._gpxRoute.summary.totalDistance ),
 					}
 				);
 				var timeSummaryElement = document.createElement ( 'div' );
-				RouteElement.appendChild ( timeSummaryElement );
+				routeElement.appendChild ( timeSummaryElement );
 				timeSummaryElement.outerHTML = L.Util.template (
-					options.RouteTimeSummaryTemplate,
+					options.routeTimeSummaryTemplate,
 					{
 						'Time' : this._formatter.formatTime ( this._gpxRoute.summary.totalTime )
 					}
@@ -770,9 +784,9 @@ Tests to do...
 				if ( this._gpxRoute.summary.ascend && -1 < this._gpxRoute.summary.ascend )
 				{
 					var ascentSummaryElement = document.createElement ( 'div' );
-					RouteElement.appendChild ( ascentSummaryElement );
+					routeElement.appendChild ( ascentSummaryElement );
 					ascentSummaryElement.outerHTML = L.Util.template (
-						options.RouteAscendSummaryTemplate,
+						options.routeAscendSummaryTemplate,
 						{
 							'Ascend' : this._formatter.formatDistance ( this._gpxRoute.summary.ascend )
 						}
@@ -781,17 +795,15 @@ Tests to do...
 				if ( this._gpxRoute.summary.descend && -1 < this._gpxRoute.summary.descend )
 				{
 					var descendSummaryElement = document.createElement ( 'div' );
-					RouteElement.appendChild ( descendSummaryElement );
+					routeElement.appendChild ( descendSummaryElement );
 					descendSummaryElement.outerHTML = L.Util.template (
-						options.RouteDescendSummaryTemplate,
+						options.routeDescendSummaryTemplate,
 						{
 							'Descend' : this._formatter.formatDistance ( this._gpxRoute.summary.descend ),
 						}
 					);
 				}
 					
-				var haveExactCumulatedDistance = true;
-				var haveExactCumulatedTime = true;
 				var cumulatedDistance = 0;
 				var cumulatedTime = 0;
 				var instrCounter = 0;
@@ -801,18 +813,10 @@ Tests to do...
 					{
 						cumulatedDistance += this._gpxRoute.instructions [ instrCounter ].distance;
 					}
-					/*
-					else{
-						haveExactCumulatedDistance = false;
-					}
-					*/
 					this._gpxRoute.instructions [ instrCounter ].cumulatedTime = cumulatedTime;
 					if ( this._gpxRoute.instructions [ instrCounter ].time )
 					{
 						cumulatedTime += this._gpxRoute.instructions [ instrCounter ].time;
-					}
-					else {
-						haveExactCumulatedTime = false;
 					}
 					if ( this._gpxRoute.instructions [ instrCounter ].instruction )
 					{
@@ -824,10 +828,10 @@ Tests to do...
 				for ( instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter++ ) {
 					// text
 					if ( this._gpxRoute.instructions [ instrCounter ].text ) {
-						var TextInstructionElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( TextInstructionElement );
-						TextInstructionElement.outerHTML = L.Util.template (
-							options.RouteTextInstructionTemplate,
+						var textInstructionElement = document.createElement ( 'div' );
+						routeElement.appendChild ( textInstructionElement );
+						textInstructionElement.outerHTML = L.Util.template (
+							options.routeTextInstructionTemplate,
 							{
 								'Number' : '' + ( instrCounter + 1 ),
 								'IconClass' : 'leaflet-routing-icon-' + this._formatter.getIconName ( this._gpxRoute.instructions [ instrCounter ], instrCounter ) + '-big',
@@ -836,13 +840,12 @@ Tests to do...
 						);
 					}
 					
-					
 					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].cumulatedDistance ) {
 						// cumulated distance
-						var CumulatedDistanceElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( CumulatedDistanceElement );
-						CumulatedDistanceElement.outerHTML = L.Util.template (
-							options.RouteCumulatedDistanceTemplate,
+						var cumulatedDistanceElement = document.createElement ( 'div' );
+						routeElement.appendChild ( cumulatedDistanceElement );
+						cumulatedDistanceElement.outerHTML = L.Util.template (
+							options.routeCumulatedDistanceTemplate,
 							{
 								'CumulatedDistance' : this._formatter.formatDistance ( this._gpxRoute.instructions [ instrCounter ].cumulatedDistance )
 							}
@@ -850,26 +853,22 @@ Tests to do...
 					}
 					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].cumulatedTime ) {
 						// cumulated time
-						var CumulatedTimeElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( CumulatedTimeElement );
-						CumulatedTimeElement.outerHTML = L.Util.template (
-							options.RouteCumulatedTimeTemplate,
+						var cumulatedTimeElement = document.createElement ( 'div' );
+						routeElement.appendChild ( cumulatedTimeElement );
+						cumulatedTimeElement.outerHTML = L.Util.template (
+							options.routeCumulatedTimeTemplate,
 							{
 								'CumulatedTime' : this._formatter.formatTime ( this._gpxRoute.instructions [ instrCounter ].cumulatedTime )
 							}
 						);
 					}
 					
-					
-					
-					
-					
 					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].distance ) {
 						// distance
-						var NextDistanceElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( NextDistanceElement );
-						NextDistanceElement.outerHTML = L.Util.template (
-							options.RouteNextDistanceTemplate,
+						var nextDistanceElement = document.createElement ( 'div' );
+						routeElement.appendChild ( nextDistanceElement );
+						nextDistanceElement.outerHTML = L.Util.template (
+							options.routeNextDistanceTemplate,
 							{
 								'NextDistance' : this._formatter.formatDistance ( this._gpxRoute.instructions [ instrCounter ].distance )
 							}
@@ -877,43 +876,43 @@ Tests to do...
 					}
 					if ( 0 !== this._gpxRoute.instructions [ instrCounter ].time ) {
 						// time
-						var NextTimeElement = document.createElement ( 'div' );
-						RouteElement.appendChild ( NextTimeElement );
-						NextTimeElement.outerHTML = L.Util.template (
-							options.RouteNextTimeTemplate,
+						var nextTimeElement = document.createElement ( 'div' );
+						routeElement.appendChild ( nextTimeElement );
+						nextTimeElement.outerHTML = L.Util.template (
+							options.routeNextTimeTemplate,
 							{
 								'NextTime' : this._formatter.formatTime ( this._gpxRoute.instructions [ instrCounter ].time )
 							}
 						);
 					}
 				} 
-				var Provider = 'OSRM';
-				var ProviderUrl = 'http://project-osrm.org/';
+				var provider = 'OSRM';
+				var providerUrl = 'http://project-osrm.org/';
 				switch ( this.getProvider ( ) ) {
 					case 'graphhopper':
-						Provider = 'GraphHopper';
-						ProviderUrl = 'http://www.graphhopper.com/'; 
+						provider = 'GraphHopper';
+						providerUrl = 'http://www.graphhopper.com/'; 
 						break;
 					case 'mapzen':
-						Provider = 'Mapzen';
-						ProviderUrl = 'http://www.mapzen.com/'; 
+						provider = 'Mapzen';
+						providerUrl = 'http://www.mapzen.com/'; 
 						break;
 					case 'mapbox':
-						Provider = 'Mapbox';
-						ProviderUrl = 'http://www.mapbox.com/'; 
+						provider = 'Mapbox';
+						providerUrl = 'http://www.mapbox.com/'; 
 						break;
 				}
-				var ProviderElement = document.createElement ( 'div' );
-				RouteElement.appendChild ( ProviderElement );
-				ProviderElement.outerHTML = L.Util.template (
-					options.RouteProviderTemplate,
+				var providerElement = document.createElement ( 'div' );
+				routeElement.appendChild ( providerElement );
+				providerElement.outerHTML = L.Util.template (
+					options.routeProviderTemplate,
 					{
-						'ProviderUrl' : ProviderUrl,
-						'Provider': Provider
+						'ProviderUrl' : providerUrl,
+						'Provider': provider
 					}
 				);
 			}
-			return RouteElement;
+			return routeElement;
 		},
 	});
 	

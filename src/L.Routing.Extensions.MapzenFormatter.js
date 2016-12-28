@@ -1,14 +1,44 @@
 /*
+Copyright - 2015 2016 - Christian Guyette - Contact: http//www.ouaie.be/
+This  program is free software;
+you can redistribute it and/or modify it under the terms of the 
+GNU General Public License as published by the Free Software Foundation;
+either version 3 of the License, or any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+/*
 +----------------------------------------------------------------------------------------------------------------------+
 | This code is mainly coming from lrm-mapzen by mapzen.                                                                |
 | See https://github.com/mapzen/lrm-mapzen                                                                             |
 +----------------------------------------------------------------------------------------------------------------------+
 */
 
+/*
+--- L.Routing.Extensions.MapzenFormatter.js file -----------------------------------------------------------------------
+
+This file contains:
+	- 
+	- 
+Changes:
+	- v1.0.1:
+		- created
+		
+Doc not reviewed...
+Tests to do...
+------------------------------------------------------------------------------------------------------------------------
+*/
 (function() {
 	'use strict';
 
 	L.Routing.Extensions.MapzenFormatter = L.Class.extend ( {
+
 		options : {
 			units: 'metric',
 			unitNames: {
@@ -26,10 +56,20 @@
 			whiteSpace : ' ' // So we can use &nbsp; if needed...
 		},
 
+		/*
+		--- initialize method --------------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
 		initialize : function ( options ) {
 			L.setOptions( this, options );
 		},
 
+		/*
+		--- formatDistance method ----------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
 		formatDistance : function ( distance ) {
 
 			//valhalla returns distance in km
@@ -60,6 +100,11 @@
 			return L.Util.template ( this.options.distanceTemplate, data );
 		},
 
+		/*
+		--- _round method ------------------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
 		_round : function ( d ) {
 			var pow10 = Math.pow ( 10, ( Math.floor ( d / this.options.roundingSensitivity ) + '' ).length - 1 ),
 				r = Math.floor ( d / pow10 ),
@@ -68,6 +113,11 @@
 			return Math.round( d / p ) * p;
 		},
 
+		/*
+		--- formatTime method --------------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
 		formatTime: function ( time /* Number (seconds) */ ) {
 			if ( time > 86400 ) {
 				return Math.round( time / 3600) + 
@@ -101,10 +151,20 @@
 			}
 		},
 
+		/*
+		--- formatInstruction method -------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		formatInstruction: function ( instr, i ) {
 		// Valhalla returns instructions itself.
 			return instr.instruction;
 		},
+
+		/*
+		--- getIconName method -------------------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
 
 		getIconName: function ( instr, i ) {
 			// you can find all Valhalla's direction types at https://github.com/valhalla/odin/blob/master/proto/tripdirections.proto
@@ -127,20 +187,42 @@
 			}
 		},
 
+		/*
+		--- _getInstructionTemplate method -------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_getInstructionTemplate: function ( instr, i ) {
 			return instr.instruction + " " + instr.length;
 		},
 		
+		/*
+		--- _getCapitalizedName method -----------------------------------------------------------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		_getCapitalizedName: function ( name ) {
 			return name.charAt ( 0 ).toUpperCase ( ) + name.slice ( 1 );
 		}
 	});
 
+	/*
+	--- L.Routing.extensions.mapzenFormatter function ----------------------------------------------------------------------
+	L.Routing.Extensions.MapboxOsrmRouteConverter factory function
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
 	L.Routing.Extensions.mapzenFormatter = function ( options ) {
 		return new L.Routing.Extensions.MapzenFormatter ( options );
 	};
+
+	/*
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
 
 	if ( typeof module !== 'undefined' && module.exports ) {
 		module.exports = L.Routing.Extensions.mapzenFormatter;
 	}
 })();
+
+/* --- End of L.Routing.Extensions.MapzenFormatter.js file --- */

@@ -45,65 +45,65 @@ Tests to do...
 		options.clear = options.clear || false;
 		
 		// Main div
-		var PolylineDialogMainDiv = L.DomUtil.create ( 'div','cyPolylineDialogMainDiv' );
+		var polylineDialogMainDiv = L.DomUtil.create ( 'div','cyPolylineDialogMainDiv' );
 
-		var PolylineDialogInputDiv = L.DomUtil.create ( 'div','cyPolylineDialogInputDiv', PolylineDialogMainDiv );
+		var polylineDialogInputDiv = L.DomUtil.create ( 'div','cyPolylineDialogInputDiv', polylineDialogMainDiv );
 
 		// Color
-		var PolylineDialogColorDiv = L.DomUtil.create ( 'div','cyPolylineDialogColorDiv', PolylineDialogInputDiv );
-		PolylineDialogColorDiv.innerHTML = 'Color:&nbsp;';
+		var polylineDialogColorDiv = L.DomUtil.create ( 'div','cyPolylineDialogColorDiv', polylineDialogInputDiv );
+		polylineDialogColorDiv.innerHTML = 'Color:&nbsp;';
 		
-		var ColorInput = L.DomUtil.create( 'input', 'cyPolylineDialogColorInput', PolylineDialogColorDiv );
-		ColorInput.type = 'color';
-		ColorInput.value = options.color;
-		ColorInput.id = 'cyPolylineDialogColorInput';
+		var colorInput = L.DomUtil.create( 'input', 'cyPolylineDialogColorInput', polylineDialogColorDiv );
+		colorInput.type = 'color';
+		colorInput.value = options.color;
+		colorInput.id = 'cyPolylineDialogColorInput';
 
 		// Width
-		var PolylineDialogWidthDiv = L.DomUtil.create ( 'div','cyPolylineDialogColorDiv', PolylineDialogInputDiv );
-		PolylineDialogWidthDiv.innerHTML = 'Width:&nbsp;';
+		var polylineDialogWidthDiv = L.DomUtil.create ( 'div','cyPolylineDialogColorDiv', polylineDialogInputDiv );
+		polylineDialogWidthDiv.innerHTML = 'Width:&nbsp;';
 
-		var WidthInput = L.DomUtil.create( 'input', 'cyPolylineDialogWidthInput', PolylineDialogWidthDiv );
-		WidthInput.type = 'number';
-		WidthInput.setAttribute ( 'min', 0 );
-		WidthInput.setAttribute ( 'max', 20 );
-		WidthInput.setAttribute ( 'step', 1 );
-		WidthInput.value = options.width;
-		WidthInput.id = 'cyPolylineDialogWidthInput';
+		var widthInput = L.DomUtil.create( 'input', 'cyPolylineDialogWidthInput', polylineDialogWidthDiv );
+		widthInput.type = 'number';
+		widthInput.setAttribute ( 'min', 0 );
+		widthInput.setAttribute ( 'max', 20 );
+		widthInput.setAttribute ( 'step', 1 );
+		widthInput.value = options.width;
+		widthInput.id = 'cyPolylineDialogWidthInput';
 		
 		// Name
-		var PolylineDialogNameDiv = L.DomUtil.create ( 'div','cyPolylineDialogNameDiv', PolylineDialogInputDiv );
-		PolylineDialogNameDiv.innerHTML = 'Name:&nbsp;';
+		var polylineDialogNameDiv = L.DomUtil.create ( 'div','cyPolylineDialogNameDiv', polylineDialogInputDiv );
+		polylineDialogNameDiv.innerHTML = 'Name:&nbsp;';
 		
-		var NameInput = L.DomUtil.create( 'input', 'cyPolylineDialogNameDiv', PolylineDialogNameDiv );
-		NameInput.id = 'cyPolylineDialogNameInput';
-		NameInput.value = options.name;
+		var nameInput = L.DomUtil.create( 'input', 'cyPolylineDialogNameDiv', polylineDialogNameDiv );
+		nameInput.id = 'cyPolylineDialogNameInput';
+		nameInput.value = options.name;
 
 		if ( ! polyline ) {
 			// Clear route
-			var PolylineDialogClearDiv = L.DomUtil.create ( 'div','cyPolylineDialogClearDiv', PolylineDialogInputDiv );
-			PolylineDialogClearDiv.innerHTML = 'Clear route:&nbsp;';
+			var polylineDialogClearDiv = L.DomUtil.create ( 'div','cyPolylineDialogClearDiv', polylineDialogInputDiv );
+			polylineDialogClearDiv.innerHTML = 'Clear route:&nbsp;';
 			
-			var ClearInput = L.DomUtil.create( 'input', 'cyPolylineDialogClearDiv', PolylineDialogClearDiv );
-			ClearInput.type = 'checkbox';
-			ClearInput.checked = options.clear;
-			ClearInput.id = 'cyPolylineDialogNameInput';		
+			var clearInput = L.DomUtil.create( 'input', 'cyPolylineDialogClearDiv', polylineDialogClearDiv );
+			clearInput.type = 'checkbox';
+			clearInput.checked = options.clear;
+			clearInput.id = 'cyPolylineDialogNameInput';		
 		}
 		// Buttons div
-		var PolylineDialogButtonsDiv = L.DomUtil.create ( 'div','cyPolylineDialogButtonsDiv', PolylineDialogMainDiv );
+		var polylineDialogButtonsDiv = L.DomUtil.create ( 'div','cyPolylineDialogButtonsDiv', polylineDialogMainDiv );
 		
 		// OK button
-		var OkButton = L.DomUtil.create( 'button', 'cyPolylineDialogOkButton', PolylineDialogButtonsDiv );
-		OkButton.setAttribute( 'type' , 'button' );
-		OkButton.innerHTML = 'OK';
+		var okButton = L.DomUtil.create( 'button', 'cyPolylineDialogOkButton', polylineDialogButtonsDiv );
+		okButton.setAttribute( 'type' , 'button' );
+		okButton.innerHTML = 'OK';
 		if ( ! polyline ) {
 			L.DomEvent.on ( 
-				OkButton, 
+				okButton, 
 				'click', 
 				function() { 
-					options.color = ColorInput.value;
-					options.width = WidthInput.value;
-					options.name = NameInput.value;
-					options.clear = ClearInput.checked;
+					options.color = colorInput.value;
+					options.width = widthInput.value;
+					options.name = nameInput.value;
+					options.clear = clearInput.checked;
 					map.closePopup ( );
 					routingMachine.RouteToLine ( options );
 				} 
@@ -111,12 +111,12 @@ Tests to do...
 		} 
 		else {
 			L.DomEvent.on ( 
-				OkButton, 
+				okButton, 
 				'click', 
 				function() { 
-					options.color = ColorInput.value;
-					options.width = WidthInput.value;
-					options.name = NameInput.value;
+					options.color = colorInput.value;
+					options.width = widthInput.value;
+					options.name = nameInput.value;
 					options.clear = false;
 					map.closePopup ( );
 					polyline.setStyle ( { color : options.color, weight : options.width } );
@@ -134,11 +134,11 @@ Tests to do...
 		}
 
 		// Cancel button
-		var CancelButton = L.DomUtil.create( 'button', 'cyPolylineDialogCancelButton', PolylineDialogButtonsDiv );
-		CancelButton.setAttribute( 'type' , 'button' );
-		CancelButton.innerHTML = 'Cancel';
+		var cancelButton = L.DomUtil.create( 'button', 'cyPolylineDialogCancelButton', polylineDialogButtonsDiv );
+		cancelButton.setAttribute( 'type' , 'button' );
+		cancelButton.innerHTML = 'Cancel';
 		L.DomEvent.on ( 
-			CancelButton, 
+			cancelButton, 
 			'click', 
 			function() { 
 				map.closePopup ( );
@@ -156,7 +156,7 @@ Tests to do...
 					autoClose : false
 				}
 			)
-			.setContent ( PolylineDialogMainDiv )
+			.setContent ( polylineDialogMainDiv )
 			.setLatLng( map.getCenter() )
 			.openOn( map );
 		return options;

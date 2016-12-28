@@ -13,75 +13,89 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/*
+--- L.Routing.Extensions.PolylineMenu.js file --------------------------------------------------------------------------------
+This file contains:
+	- 
+	- 
+Changes:
+	- v1.0.1:
+		- created
+		
+Doc not reviewed...
+Tests to do...
+------------------------------------------------------------------------------------------------------------------------
+*/
+
 (function() {
 	'use strict';
 
 	
-	var PolylineMenu = function ( MouseEvent, Map, routingMachine ) {	
-		L.DomEvent.stopPropagation ( MouseEvent ); 
+	/*
+	--- L.Routing.Extensions.PolylineMenu function -------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
+	L.Routing.Extensions.PolylineMenu = function ( mouseEvent, map, routingMachine ) {	
+
+		L.DomEvent.stopPropagation ( mouseEvent ); 
 
 		// menu creation		
-		var MainDiv = L.DomUtil.create ( 'div', 'PolylineMenu-MainDiv' );
+		var mainDiv = L.DomUtil.create ( 'div', 'PolylineMenu-MainDiv' );
 
 		// Edition button
-		var EditPolylineButton = L.DomUtil.create ( 'button', 'PolylineMenu-EditPolylineButton', MainDiv );
-		EditPolylineButton.setAttribute ( 'type' , 'button' );
-		EditPolylineButton.innerHTML = 'Edit';
+		var editPolylineButton = L.DomUtil.create ( 'button', 'PolylineMenu-EditPolylineButton', mainDiv );
+		editPolylineButton.setAttribute ( 'type' , 'button' );
+		editPolylineButton.innerHTML = 'Edit';
 
-		var EditDialog;
+		var editDialog;
 		if ( typeof module !== 'undefined' && module.exports ) {
-			EditDialog = require ('./L.Routing.Extensions.Dialogs' );
-		}
-		else {
-			EditDialog = polylineDialog ;
+			editDialog = require ('./L.Routing.Extensions.Dialogs' );
 		}
 
 		L.DomEvent.on ( 
-			EditPolylineButton, 
+			editPolylineButton, 
 			'click', 
 			function ( ) 
 			{ 
-				Map.closePopup(); 
+				map.closePopup(); 
 				var LineOptions = { 
-					color : MouseEvent.target.options.color,
-					width : MouseEvent.target.options.weight,
-					name : MouseEvent.target.LrmExtensionsName
+					color : mouseEvent.target.options.color,
+					width : mouseEvent.target.options.weight,
+					name : mouseEvent.target.LrmExtensionsName
 				};
 				if ( typeof module !== 'undefined' && module.exports ) {
-					LineOptions = require ('./L.Routing.Extensions.Dialogs' )( LineOptions, Map, null, MouseEvent.target );
-				}
-				else {
-					LineOptions = polylineDialog ( LineOptions, Map, null, MouseEvent.target );
+					LineOptions = require ('./L.Routing.Extensions.Dialogs' )( LineOptions, map, null, mouseEvent.target );
 				}
 			}
 		);
 
 		// Delete button
-		var DeletePolylineButton = L.DomUtil.create ( 'button', 'PolylineMenu-DeletePolylineButton', MainDiv );
-		DeletePolylineButton.setAttribute ( 'type' , 'button' );
-		DeletePolylineButton.innerHTML = 'Delete';
+		var deletePolylineButton = L.DomUtil.create ( 'button', 'PolylineMenu-DeletePolylineButton', mainDiv );
+		deletePolylineButton.setAttribute ( 'type' , 'button' );
+		deletePolylineButton.innerHTML = 'Delete';
 		L.DomEvent.on ( 
-			DeletePolylineButton, 
+			deletePolylineButton, 
 			'click', 
 			function ( ) 
 			{ 
-				Map.closePopup ( ); 
-				//MouseEvent.target.remove ( );
-				routingMachine.getRoutePolylines ( ).removeLayer ( MouseEvent.target );
+				map.closePopup ( ); 
+				//mouseEvent.target.remove ( );
+				routingMachine.getRoutePolylines ( ).removeLayer ( mouseEvent.target );
 			} 
 		);
 
 		// Cancel button
-		var CancelPolylineButton = L.DomUtil.create( 'button', 'PolylineMenu-CancelPolylineButton', MainDiv );
-		CancelPolylineButton.setAttribute( 'type' , 'button' );
-		CancelPolylineButton.innerHTML = 'Cancel';	
-		CancelPolylineButton.id = 'CancelPolylineButton';
+		var cancelPolylineButton = L.DomUtil.create( 'button', 'PolylineMenu-CancelPolylineButton', mainDiv );
+		cancelPolylineButton.setAttribute( 'type' , 'button' );
+		cancelPolylineButton.innerHTML = 'Cancel';	
+		cancelPolylineButton.id = 'CancelPolylineButton';
 		
 		L.DomEvent.on ( 
-			CancelPolylineButton, 
+			cancelPolylineButton, 
 			'click', function ( )
 			{ 
-				Map.closePopup ( ); 
+				map.closePopup ( ); 
 			} 
 		);
 
@@ -93,15 +107,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 				maxWidth : 300,
 				className : 'PolylineMenu'
 			}
-		).setContent ( MainDiv ).setLatLng( MouseEvent.latlng ).openOn( Map );
+		).setContent ( mainDiv ).setLatLng( mouseEvent.latlng ).openOn( map );
 		document.getElementById ( 'CancelPolylineButton' ).focus ( );
 	};
 	
-	function polylineMenu ( MouseEvent, Map, routingMachine ) {	
-		return new PolylineMenu ( MouseEvent, Map, routingMachine );
-	}
+	/*
+	--- L.Routing.Extensions.polylineMenu function ----------------------------------------------------------------------------------------------
+	L.Routing.Extensions.PolylineMenu factory function
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
+	L.Routing.Extensions.polylineMenu = function ( mouseEvent, map, routingMachine ) {	
+		return new L.Routing.Extensions.PolylineMenu ( mouseEvent, map, routingMachine );
+	};
 	
+	/*
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
+
 	if ( typeof module !== 'undefined' && module.exports ) {
-		module.exports = PolylineMenu;
+		module.exports = L.Routing.Extensions.PolylineMenu;
 	}
 } ) ( );
+
+/* --- End of L.Routing.Extensions.PolylineMenu.js file --- */
