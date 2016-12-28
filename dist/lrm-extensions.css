@@ -380,12 +380,6 @@ a#downloadGpx:hover
 { 
 	background-image : url('lrm-extensions.img/control/kTransitTram.png');
 }
-
-
-
-
-
-
 .leaflet-routing-icon-continue         
 {
 	background-position: 0px 0px !important;
