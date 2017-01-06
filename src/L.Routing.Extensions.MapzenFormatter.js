@@ -92,7 +92,7 @@ Tests to do...
 			} 
 			else {
 				data = {
-					value: distance >= 1 ? distance : distance * 1000,
+					value: distance >= 1 ? distance.toFixed ( 3 ) : ( distance * 1000 ).toFixed ( ),
 					unit: distance >= 1 ? this.options.unitNames.kilometers : this.options.unitNames.meters
 				};
 			}
