@@ -216,6 +216,10 @@ a#downloadGpx:hover
 {
 	background-image : url('lrm-extensions.img/control/polyline.png');
 }
+#lrm-extensions-EraseButton
+{
+	background-image : url('lrm-extensions.img/control/erase.png');
+}
 .leaflet-routing-icon {
     -webkit-background-size: 20px 20px !important;
     background-size: 20px 20px !important;

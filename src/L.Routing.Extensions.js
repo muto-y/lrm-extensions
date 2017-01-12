@@ -398,6 +398,19 @@ Tests to do...
 					this
 				)
 			);
+			var eraseButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
+			eraseButton.id = 'lrm-extensions-EraseButton';
+			L.DomEvent.on (
+				eraseButton,
+				'click',
+				L.bind (
+					function ( event )
+					{
+						this.setWaypoints ( [] );
+					},
+					this
+				)
+			);
 
 			// buttons are added to the control
 			container.insertBefore( this._routingButtonsDiv, container.firstChild);
