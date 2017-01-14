@@ -568,6 +568,19 @@ Tests to do...
 			this.fire ( 'gpxchanged' );
 		},
 		
+		getInstructionAtLatLng : function ( latLng ) {
+			var distance = 0;
+			for ( var instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter ++ ) {
+				if ( latLng.equals (  this._gpxRoute.coordinates [ this._gpxRoute.instructions [ instrCounter ].index ] ) ) {
+					return {
+						iconName : this._formatter.getIconName ( this._gpxRoute.instructions [ instrCounter ], instrCounter ),
+						distance : 'mapzen' === this.options.provider ? distance : ( distance / 1000.0 )
+					};
+				}
+				distance += this._gpxRoute.instructions [ instrCounter ].distance;
+			}
+			return null;
+		},
 		/*
 		--- _prepareGpxLink method ---------------------------------------------------------------------------------------------
 		This method set the GPX data in the GPX button
@@ -927,6 +940,14 @@ Tests to do...
 			}
 			return routeElement;
 		},
+		_addRowListeners: function ( row, coordinate ) {
+			L.Routing.Control.prototype._addRowListeners.call ( this, row, coordinate );
+			L.DomEvent.addListener ( row, 'contextmenu', function ( e ) {
+				e.preventDefault ( );
+				e.stopPropagation ( );
+				this.fire ( 'instructioncontextmenu', coordinate );
+			}, this);
+		}
 	});
 	
 	/*
