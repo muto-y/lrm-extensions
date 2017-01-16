@@ -475,6 +475,43 @@ Tests to do...
 				}
 			}
 		},
+		getPointAndDistance : function ( latLng ) {
+			if ( ! this._gpxRoute || ! this._gpxRoute.coordinates || 2 > this._gpxRoute.coordinates.length ) {
+				return null;
+			}
+			var minDistance = Number.MAX_VALUE;
+			var distance;
+			var minSegmentPos = 0;
+			var point = L.Projection.SphericalMercator.project ( latLng );
+			var point1;
+			var point2;
+			for ( var coordCounter = 1; coordCounter < this._gpxRoute.coordinates.length; coordCounter ++ ) {
+				point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter -1 ] );
+				point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter ] );
+				distance = L.LineUtil.pointToSegmentDistance ( point, point1, point2 );
+				if ( distance < minDistance )
+				{
+					minDistance = distance;
+					minSegmentPos = coordCounter;
+				}
+			}	
+			if ( 0 === minSegmentPos ) {
+				return null;
+			}
+			point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ minSegmentPos -1 ] );
+			point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ minSegmentPos ] );
+			point =  L.LineUtil.closestPointOnSegment ( point, point1, point2 );
+			var newLatLng = L.Projection.SphericalMercator.unproject ( point );
+			distance = 0;
+			for ( coordCounter = 1; coordCounter < minSegmentPos;coordCounter ++ ) {
+				distance += this._gpxRoute.coordinates[ coordCounter - 1 ].distanceTo ( this._gpxRoute.coordinates[ coordCounter ] );
+			}
+			distance += this._gpxRoute.coordinates[ coordCounter - 1 ].distanceTo ( newLatLng );
+			return {
+				latLng : newLatLng,
+				distance : Math.round ( distance ) / 1000
+			};
+		},
 		
 		/*
 		--- addPolyline method -------------------------------------------------------------------------------------------------
