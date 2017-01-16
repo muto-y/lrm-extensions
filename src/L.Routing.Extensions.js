@@ -481,32 +481,54 @@ Tests to do...
 			}
 			var minDistance = Number.MAX_VALUE;
 			var distance;
-			var minSegmentPos = 0;
+			var pointIsBeforeIndex = 0;
 			var point = L.Projection.SphericalMercator.project ( latLng );
 			var point1;
 			var point2;
-			for ( var coordCounter = 1; coordCounter < this._gpxRoute.coordinates.length; coordCounter ++ ) {
-				point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter -1 ] );
-				point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter ] );
+
+			for ( var coordCounter = 0; coordCounter < this._gpxRoute.coordinates.length - 1; coordCounter ++ ) {
+				point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter ] );
+				point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ coordCounter + 1] );
 				distance = L.LineUtil.pointToSegmentDistance ( point, point1, point2 );
 				if ( distance < minDistance )
 				{
 					minDistance = distance;
-					minSegmentPos = coordCounter;
+					pointIsBeforeIndex = coordCounter + 1;
 				}
 			}	
-			if ( 0 === minSegmentPos ) {
+
+			if ( 0 === pointIsBeforeIndex ) {
 				return null;
 			}
-			point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ minSegmentPos -1 ] );
-			point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ minSegmentPos ] );
+			point1 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ pointIsBeforeIndex -1 ] );
+			point2 = L.Projection.SphericalMercator.project ( this._gpxRoute.coordinates [ pointIsBeforeIndex ] );
 			point =  L.LineUtil.closestPointOnSegment ( point, point1, point2 );
 			var newLatLng = L.Projection.SphericalMercator.unproject ( point );
 			distance = 0;
-			for ( coordCounter = 1; coordCounter < minSegmentPos;coordCounter ++ ) {
-				distance += this._gpxRoute.coordinates[ coordCounter - 1 ].distanceTo ( this._gpxRoute.coordinates[ coordCounter ] );
+			
+			// to avoid differences between computed distance and distance given by the provider, we use 
+			// the distance given by the provider to the previous instruction.
+
+			var lastInstructionIndex = 0;
+			var nextDistance = 0;
+			for ( var instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter ++ ) {
+				if ( this._gpxRoute.instructions [ instrCounter ].index >= pointIsBeforeIndex) {
+					break;
+				}
+				distance += nextDistance;
+				nextDistance =  this._gpxRoute.instructions [ instrCounter ].distance;
+				lastInstructionIndex = this._gpxRoute.instructions [ instrCounter ].index;
 			}
-			distance += this._gpxRoute.coordinates[ coordCounter - 1 ].distanceTo ( newLatLng );
+			
+			//Mapzen gives distance in km...
+			distance = 'mapzen' === this.options.provider ? distance * 1000 : distance;
+
+			for ( coordCounter = lastInstructionIndex; coordCounter < pointIsBeforeIndex - 1;coordCounter ++ ) {
+				distance += this._gpxRoute.coordinates[ coordCounter ].distanceTo ( this._gpxRoute.coordinates[ coordCounter + 1 ] );
+			}
+
+			distance += this._gpxRoute.coordinates[ pointIsBeforeIndex - 1 ].distanceTo ( newLatLng );
+
 			return {
 				latLng : newLatLng,
 				distance : Math.round ( distance ) / 1000
