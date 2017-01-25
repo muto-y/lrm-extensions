@@ -19,9 +19,13 @@ See [OSRM usage policy] (https://github.com/Project-OSRM/osrm-backend/wiki/Api-u
 ## How it's work
 
 Depending of the API keys you have given, a button is added in the control for each routing engine. Click on a button to change the routing engine.
+
 Click on the button 'bike' <img src="lrm-extensions.img/control/Bike.png" />, 'pedestrian' <img src="lrm-extensions.img/control/Pedestrian.png" /> or 'car' <img src="lrm-extensions.img/control/Car.png" /> to change the transit mode
+
 Click on the 'GPX' button <img src="lrm-extensions.img/control/gpx.png" /> to download the gpx file
+
 Click on the 'polyline' button <img src="lrm-extensions.img/control/polyline.png" /> to transform the route into polyline. In the dialog box, select a color, a width and eventually a name for the polyline.
+
 Click on the 'clean all waypoints' button <img src="lrm-extensions.img/control/erase.png" /> to completely remove the route
 
 ### Editing polylines
