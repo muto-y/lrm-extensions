@@ -6,7 +6,9 @@ lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you ca
 - switch between Mapbox, Mapzen or Graphhopper as routing engine, using buttons in the control
 - switch between car, bike or pedestrian, using buttons in the control
 - export the route to a GPX file
+- export the route description to an HTMLElement object
 - transform the route into a leaflet polyline
+- takes actions on a right click on an instruction in Leaflet Routing Machine control with the 'instructioncontextmenu' event 
 
 See the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
 
@@ -160,22 +162,22 @@ This method gives an HTMLElement object with the complete route description
 
 The HTML element can be configured with the templates defined in the options parameter:
 	
-| Option                         | Type    | Default value                                                                                                                       |
-| ------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| routeElement                   | string  | 'div'                                                                                                                               | 
-| routeElementId                 | string  | 'Route'                                                                                                                             |
-| routeHeaderTemplate            | string  | '<h1>itinerary&nbsp;{TransitMode}&nbsp;:</h1>'                                                                                      |
-| routeDistanceSummaryTemplate   | string  | '<div class="Route-DistanceSummary">Distance&nbsp;:&nbsp;{ Distance }</div>'                                                        |
-| routeTimeSummaryTemplate       | string  | '<div class="Route-TimeSummary">Time&nbsp;:&nbsp;{ Time }</div>'                                                                    |
-| routeAscendSummaryTemplate     | string  | '<div class="Route-AscendSummary">Ascend&nbsp;:&nbsp;{ Ascend }</div>'                                                              |
-| routeDescendSummaryTemplate    | string  | '<div class="Route-DescendSummary">Descend&nbsp;:&nbsp;{ Descend }</div>'                                                           |
-| routeTextInstructionTemplate   | string  | '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>'      |
-| routeNextDistanceTemplate      | string  | '<div class="Route-NextDistanceInstruction">Distance to the next instruction: {NextDistance}</div>'                                 |
-| routeNextTimeTemplate          | string  | '<div class="Route-NextTimeInstruction">Time to the next instruction: {NextTime}</div>'                                             |
-| routeCumulatedDistanceTemplate | string  | '<div class="Route-CumulatedDistanceInstruction">Cumulated distance to this instruction: {CumulatedDistance}</div>'                 |
-| routeCumulatedTimeTemplate     | string  | '<div class="Route-CumulatedTimeInstruction">Cumulated time to this instruction: {CumulatedTime}</div>'                             |
-| routeProviderTemplate          | string  | '<div class="Route-Provider">This route is computed by <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>' |
-| transitModeName                | object  | { bike : 'bike', pedestrian : 'pedestrian', car : 'car' }                                                                           |
+| Option                         | Type    | Default value                                                                                                                                   |
+| ------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| routeElement                   | string  | ```HTML 'div' ```                                                                                                                               | 
+| routeElementId                 | string  | ```HTML 'Route' ```                                                                                                                             |
+| routeHeaderTemplate            | string  | ```HTML '<h1>itinerary&nbsp;{TransitMode}&nbsp;:</h1>' ```                                                                                      |
+| routeDistanceSummaryTemplate   | string  | ```HTML '<div class="Route-DistanceSummary">Distance&nbsp;:&nbsp;{ Distance }</div>' ```                                                        |
+| routeTimeSummaryTemplate       | string  | ```HTML '<div class="Route-TimeSummary">Time&nbsp;:&nbsp;{ Time }</div>' ```                                                                    |
+| routeAscendSummaryTemplate     | string  | ```HTML '<div class="Route-AscendSummary">Ascend&nbsp;:&nbsp;{ Ascend }</div>' ```                                                              |
+| routeDescendSummaryTemplate    | string  | ```HTML '<div class="Route-DescendSummary">Descend&nbsp;:&nbsp;{ Descend }</div>' ```                                                           |
+| routeTextInstructionTemplate   | string  | ```HTML '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>' ```      |
+| routeNextDistanceTemplate      | string  | ```HTML '<div class="Route-NextDistanceInstruction">Distance to the next instruction: {NextDistance}</div>' ```                                 |
+| routeNextTimeTemplate          | string  | ```HTML '<div class="Route-NextTimeInstruction">Time to the next instruction: {NextTime}</div>' ```                                             |
+| routeCumulatedDistanceTemplate | string  | ```HTML '<div class="Route-CumulatedDistanceInstruction">Cumulated distance to this instruction: {CumulatedDistance}</div>' ```                 |
+| routeCumulatedTimeTemplate     | string  | ```HTML '<div class="Route-CumulatedTimeInstruction">Cumulated time to this instruction: {CumulatedTime}</div>' ```                             |
+| routeProviderTemplate          | string  | ```HTML '<div class="Route-Provider">This route is computed by <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>' ``` |
+| transitModeName                | object  | ```HTML { bike : 'bike', pedestrian : 'pedestrian', car : 'car' } ```                                                                           |
 
 ### gpxchanged event
 
