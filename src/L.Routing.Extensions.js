@@ -425,12 +425,12 @@ Tests to do...
 		},
 		
 		/*
-		--- RouteToLine method -------------------------------------------------------------------------------------------------
+		--- routeToLine method -------------------------------------------------------------------------------------------------
 		This method transforms the current route into a polyline
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		RouteToLine  : function ( options ) {
+		routeToLine  : function ( options ) {
 			if ( this._gpxRoute && this._gpxRoute.coordinates && 0 < this._gpxRoute.coordinates.length ) {
 				var polyline = L.polyline ( this._gpxRoute.coordinates, { color : options.color, weight : options.width } );	
 				if ( 0 < options.name.length ) {
@@ -477,6 +477,13 @@ Tests to do...
 				}
 			}
 		},
+
+		/*
+		--- getPointAndDistance method -----------------------------------------------------------------------------------------
+		This method return the nearest point on the route and the distance from the beginning of the route to this point
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
 		getPointAndDistance : function ( latLng ) {
 			if ( ! this._gpxRoute || ! this._gpxRoute.coordinates || 2 > this._gpxRoute.coordinates.length ) {
 				return null;
@@ -581,7 +588,7 @@ Tests to do...
 		},
 		
 		/*
-		--- RouteToLine method -------------------------------------------------------------------------------------------------
+		--- getRoutePolylines method -------------------------------------------------------------------------------------------------
 		Simple get method...
 		------------------------------------------------------------------------------------------------------------------------
 		*/
@@ -659,17 +666,12 @@ Tests to do...
 		
 		getGpxString : function ( options ) {
 
-			if ( undefined === options ) {
-				options = options || {};
-			}
+			options = options || {};
 			if ( undefined === options.gpxXmlDeclaration )
 			{
 				options.gpxXmlDeclaration = true;
 			}
-			if ( undefined === options.gpxDate )
-			{
-				options.gpxDate = 2;
-			}
+			options.gpxDate = options.gpxDate || 2;
 			if ( undefined === options.gpxWaypoints )
 			{
 				options.gpxWaypoints = true;
@@ -787,34 +789,36 @@ Tests to do...
 			
 			options = options || {};
 			options.routeElement = options.routeElement || 'div';
-			options.routeHeader = options.routeHeader || '<h1>Itinéraire&nbsp;{TransitMode}&nbsp;:</h1>';
+			options.routeHeaderTemplate = options.routeHeaderTemplate || '<h1>itinerary&nbsp;{TransitMode}&nbsp;:</h1>';
 			options.routeElementId = options.routeElementId || 'Route';
-			options.routeDistanceSummaryTemplate = options.routeDistanceSummaryTemplate || '<div class="Route-Summary">Distance&nbsp;:&nbsp;{ Distance }</div>';
-			options.routeTimeSummaryTemplate = options.routeTimeSummaryTemplate || '<div class="Route-Summary">Temps&nbsp;:&nbsp;{ Time }</div>';
-			options.routeAscendSummaryTemplate = options.routeAscendSummaryTemplate || '<div class="Route-Summary">Montée&nbsp;:&nbsp;{ Ascend }</div>';
-			options.routeDescendSummaryTemplate = options.routeDescendSummaryTemplate || '<div class="Route-Summary">Descente&nbsp;:&nbsp;{ Descend }</div>';
+			options.routeDistanceSummaryTemplate = options.routeDistanceSummaryTemplate || '<div class="Route-DistanceSummary">Distance&nbsp;:&nbsp;{ Distance }</div>';
+			options.routeTimeSummaryTemplate = options.routeTimeSummaryTemplate || '<div class="Route-TimeSummary">Time&nbsp;:&nbsp;{ Time }</div>';
+			options.routeAscendSummaryTemplate = options.routeAscendSummaryTemplate || '<div class="Route-AscendSummary">Ascend&nbsp;:&nbsp;{ Ascend }</div>';
+			options.routeDescendSummaryTemplate = options.routeDescendSummaryTemplate || '<div class="Route-DescendSummary">Descend&nbsp;:&nbsp;{ Descend }</div>';
 			options.routeTextInstructionTemplate = options.routeTextInstructionTemplate || '<div class="Route-TextInstruction">{Number}<span class="leaflet-routing-icon-big {IconClass}"></span>{TextInstruction}</div>'; 
-			options.routeNextDistanceTemplate = options.routeNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance jusqu&apos;au prochain point: {NextDistance}</div>'; 
-			options.routeNextTimeTemplate = options.routeNextTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps jusqu&apos;au prochain point: {NextTime}</div>'; 
-			options.routeCumulatedDistanceTemplate = options.routeCumulatedDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance cumulée jusqu&apos;à ce point: {CumulatedDistance}</div>'; 
-			options.routeCumulatedTimeTemplate = options.routeCumulatedTimeTemplate || '<div class="Route-NextDistanceInstruction">Temps cumulé jusqu&apos;à ce point: {CumulatedTime}</div>'; 
-			options.routeProviderTemplate = options.routeProviderTemplate || '<div class="Route-Provider">Ce trajet a été calculé par <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
+			options.routeNextDistanceTemplate = options.routeNextDistanceTemplate || '<div class="Route-NextDistanceInstruction">Distance to the next instruction: {NextDistance}</div>'; 
+			options.routeNextTimeTemplate = options.routeNextTimeTemplate || '<div class="Route-NextTimeInstruction">Time to the next instruction: {NextTime}</div>'; 
+			options.routeCumulatedDistanceTemplate = options.routeCumulatedDistanceTemplate || '<div class="Route-CumulatedDistanceInstruction">Cumulated distance to this instruction: {CumulatedDistance}</div>'; 
+			options.routeCumulatedTimeTemplate = options.routeCumulatedTimeTemplate || '<div class="Route-CumulatedTimeInstruction">Cumulated time to this instruction: {CumulatedTime}</div>'; 
+			options.routeProviderTemplate = options.routeProviderTemplate || '<div class="Route-Provider">This route is computed by <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
+			options.transitModeName = options.transitModeName || { bike : 'bike', pedestrian : 'pedestrian', car : 'car' };
+			
 			var routeElement = document.createElement ( options.routeElement );
 			routeElement.id = options.routeElementId;
 			var transitMode;
 			switch ( this.getTransitMode ( ) ) {
 				case 'bike':
-					transitMode = 'vélo';
+					transitMode = options.transitModeName.bike;
 					break;
 				case 'pedestrian':
-					transitMode = 'piéton';
+					transitMode = options.transitModeName.pedestrian;
 					break;
 				case 'car':
-					transitMode = 'voiture';
+					transitMode = options.transitModeName.car;
 					break;
 			}
 			routeElement.innerHTML = L.Util.template (
-				options.routeHeader,
+				options.routeHeaderTemplate,
 				{
 					'TransitMode' : transitMode
 				}
