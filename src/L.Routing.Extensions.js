@@ -236,48 +236,42 @@ Tests to do...
 				L.DomEvent.on ( 
 					bikeButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.transitMode = 'bike';
-							this.options.router.options.transitMode = 'bike';
-							this.route ( );
-							this.fire ( 'transitmodechanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.transitMode = 'bike';
+						this.options.router.options.transitMode = 'bike';
+						this.route ( );
+						this.fire ( 'transitmodechanged' );
+					},
+					this
 				);
 				
 				// event for the 'pedestrian' button
 				L.DomEvent.on ( 
 					pedestrianButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.transitMode = 'pedestrian';
-							this.options.router.options.transitMode = 'pedestrian';
-							this.route ( );
-							this.fire ( 'transitmodechanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.transitMode = 'pedestrian';
+						this.options.router.options.transitMode = 'pedestrian';
+						this.route ( );
+						this.fire ( 'transitmodechanged' );
+					},
+					this
 				);
 				
 				// event for the 'car' button
 				L.DomEvent.on ( 
 					carButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.transitMode = 'car';
-							this.options.router.options.transitMode = 'car';
-							this.route ( );
-							this.fire ( 'transitmodechanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.transitMode = 'car';
+						this.options.router.options.transitMode = 'car';
+						this.route ( );
+						this.fire ( 'transitmodechanged' );
+					},
+					this
 				);
 			}
 
@@ -292,17 +286,15 @@ Tests to do...
 				L.DomEvent.on ( 
 					graphHopperButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.provider = 'graphhopper';
-							this.options.router.options.provider = 'graphhopper';
-							this._formatter = new L.Routing.Formatter ( );
-							this.route ( );
-							this.fire ( 'providerchanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.provider = 'graphhopper';
+						this.options.router.options.provider = 'graphhopper';
+						this._formatter = new L.Routing.Formatter ( );
+						this.route ( );
+						this.fire ( 'providerchanged' );
+					},
+					this
 				);
 			}
 			if ( 0 < this.options.providerKeys.Mapzen.length ) {
@@ -312,18 +304,16 @@ Tests to do...
 				L.DomEvent.on ( 
 					mapzenButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.provider = 'mapzen';
-							this.options.router.options.provider = 'mapzen';
-							require ( './L.Routing.Extensions.MapzenFormatter' );
-							this._formatter = L.Routing.Extensions.mapzenFormatter ( );
-							this.route ( );
-							this.fire ( 'providerchanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.provider = 'mapzen';
+						this.options.router.options.provider = 'mapzen';
+						require ( './L.Routing.Extensions.MapzenFormatter' );
+						this._formatter = L.Routing.Extensions.mapzenFormatter ( );
+						this.route ( );
+						this.fire ( 'providerchanged' );
+					},
+					this
 				);
 			}
 			if ( 0 < this.options.providerKeys.Mapbox.length ) {
@@ -333,17 +323,15 @@ Tests to do...
 				L.DomEvent.on ( 
 					mapboxButton, 
 					'click', 
-					L.bind (
-						function ( event ) 
-						{ 
-							this.options.provider = 'mapbox';
-							this.options.router.options.provider = 'mapbox';
-							this._formatter = new L.Routing.Formatter ( );
-							this.route ( );
-							this.fire ( 'providerchanged' );
-						},
-						this
-					)
+					function ( event ) 
+					{ 
+						this.options.provider = 'mapbox';
+						this.options.router.options.provider = 'mapbox';
+						this._formatter = new L.Routing.Formatter ( );
+						this.route ( );
+						this.fire ( 'providerchanged' );
+					},
+					this
 				);
 			}
 
@@ -367,11 +355,6 @@ Tests to do...
 			}
 			
 			// the GPX button is created
-			//var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
-			//gpxAnchor.id = 'downloadGpx';
-			//gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
-			//gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
-
 			var GpxButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
 			GpxButton.id = 'lrm-extensions-GpxButton';
 			L.DomEvent. on (
@@ -399,24 +382,24 @@ Tests to do...
 			L.DomEvent.on ( 
 				routeToLineButton, 
 				'click', 
-				L.bind (
-					function ( event ) 
-					{ 
-						var lineOptions = { color : '#ff0000', width : 5, clear : false, name : '' };
-						if ( this._gpxRoute && this._gpxRoute.name && 0 < this._gpxRoute.name.length ) {
-							lineOptions.name = this._gpxRoute.name;
-						}
-						else {
-							lineOptions.name = '';
-						}
-							
-						if ( typeof module !== 'undefined' && module.exports ) {
-							lineOptions = require ('./L.Routing.Extensions.Dialogs' )( lineOptions, this._map, this );
-						}
-					},
-					this
-				)
+				function ( event ) 
+				{ 
+					var lineOptions = { color : '#ff0000', width : 5, clear : false, name : '' };
+					if ( this._gpxRoute && this._gpxRoute.name && 0 < this._gpxRoute.name.length ) {
+						lineOptions.name = this._gpxRoute.name;
+					}
+					else {
+						lineOptions.name = '';
+					}
+						
+					if ( typeof module !== 'undefined' && module.exports ) {
+						lineOptions = require ('./L.Routing.Extensions.Dialogs' )( lineOptions, this._map, this );
+					}
+				},
+				this
 			);
+			
+			// the remove all waypoints button is created
 			var eraseButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
 			eraseButton.id = 'lrm-extensions-EraseButton';
 			L.DomEvent.on (
