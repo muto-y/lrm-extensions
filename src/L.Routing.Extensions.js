@@ -800,7 +800,7 @@ Tests to do...
 			options.routeNextTimeTemplate = options.routeNextTimeTemplate || '<div class="Route-NextTimeInstruction">Time to the next instruction: {NextTime}</div>'; 
 			options.routeCumulatedDistanceTemplate = options.routeCumulatedDistanceTemplate || '<div class="Route-CumulatedDistanceInstruction">Cumulated distance to this instruction: {CumulatedDistance}</div>'; 
 			options.routeCumulatedTimeTemplate = options.routeCumulatedTimeTemplate || '<div class="Route-CumulatedTimeInstruction">Cumulated time to this instruction: {CumulatedTime}</div>'; 
-			options.routeProviderTemplate = options.routeProviderTemplate || '<div class="Route-Provider">This route is computed by <a href="{ProviderUrl}" target="_blank">{Provider}<a> - © {Provider}.</div>';
+			options.routeProviderTemplate = options.routeProviderTemplate || '<div class="Route-Provider">This route is computed by <a href="{ProviderUrl}" target="_blank">{Provider}</a> - © {Provider}.</div>';
 			options.transitModeName = options.transitModeName || { bike : 'bike', pedestrian : 'pedestrian', car : 'car' };
 			
 			var routeElement = document.createElement ( options.routeElement );
