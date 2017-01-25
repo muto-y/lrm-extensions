@@ -3852,7 +3852,7 @@ Tests to do...
 					'Please note that it is **NOT SUITABLE FOR PRODUCTION USE**.\n' +
 					'Refer to the demo server\'s usage policy: ' +
 					'https://github.com/Project-OSRM/osrm-backend/wiki/Api-usage-policy\n\n' +
-					'To change, set the serviceUrl option.\n\n' +
+					'To change, set the serviceUrl option or add at least a Mapbox, Mapzen or GraphHopper API key.\n\n' +
 					'Please do not report issues with this server to neither ' +
 					'Leaflet Routing Machine or OSRM or lrm-extensions - it\'s for\n' +
 					'demo only, and will sometimes not be available, or work in ' +
@@ -4614,10 +4614,29 @@ Tests to do...
 			}
 			
 			// the GPX button is created
-			var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
-			gpxAnchor.id = 'downloadGpx';
-			gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
-			gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+			//var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
+			//gpxAnchor.id = 'downloadGpx';
+			//gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
+			//gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+
+			var GpxButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
+			GpxButton.id = 'lrm-extensions-GpxButton';
+			L.DomEvent. on (
+				GpxButton,
+				'click',
+				function ( event ) {
+					if ( ! this._gpxRoute ) {
+						return;
+					}
+					var utilities;
+					if ( typeof module !== 'undefined' && module.exports ) {
+						utilities = require ('./utilities' );
+					}
+					utilities.saveFile ( 'lrm-extensions.gpx', this.getGpxString ( ), 'application/xml' );
+				},
+				this
+			);
+				
 
 			// the polyline button is created
 			var routeToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
@@ -4869,8 +4888,6 @@ Tests to do...
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			// route is saved for the GPX and polyline
 			this._gpxRoute = routes.route;
-			// GPX file
-			this._prepareGpxLink ( );
 			this.fire ( 'gpxchanged' );
 		},
 		
@@ -4886,34 +4903,6 @@ Tests to do...
 				distance += this._gpxRoute.instructions [ instrCounter ].distance;
 			}
 			return null;
-		},
-		/*
-		--- _prepareGpxLink method ---------------------------------------------------------------------------------------------
-		This method set the GPX data in the GPX button
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_prepareGpxLink : function ( ) {
-			// gpx file is prepared
-			// try... catch is needed because some browsers don't implement window.URL.createObjectURL correctly :-( 
-			var gpxFile = null;
-
-			try {
-				var gpxData = new File ( [ this.getGpxString ( ) ], { type: 'application/xml' } );
-				if ( gpxFile !== null ) {
-					window.URL.revokeObjectURL ( gpxFile );
-				}
-				gpxFile = window.URL.createObjectURL ( gpxData );
-			}
-			catch ( Error ) {
-			}
-			
-			if ( gpxFile ) {
-				document.getElementById( 'downloadGpx').href = gpxFile;
-			}
-			else {
-				document.getElementById( 'downloadGpx' ).style.visibility = 'hidden';
-			}
 		},
 		
 		/*
@@ -5276,4 +5265,185 @@ Tests to do...
 } ) ( );
 
 /* --- End of L.Routing.Extensions.js file --- */
-},{"./L.Routing.Extensions.Dialogs":10,"./L.Routing.Extensions.MapzenFormatter":13,"./L.Routing.Extensions.PolylineMenu":15,"./L.Routing.Extensions.Router":16}]},{},[17]);
+},{"./L.Routing.Extensions.Dialogs":10,"./L.Routing.Extensions.MapzenFormatter":13,"./L.Routing.Extensions.PolylineMenu":15,"./L.Routing.Extensions.Router":16,"./utilities":18}],18:[function(require,module,exports){
+/*
+Copyright - 2016 - Christian Guyette - Contact: http//www.ouaie.be/
+This  program is free software;
+you can redistribute it and/or modify it under the terms of the 
+GNU General Public License as published by the Free Software Foundation;
+either version 3 of the License, or any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+/*
+--- Utilities.js file -------------------------------------------------------------------------------------------------
+
+This file contains:
+	- the getUtilities function
+	- the module.exports implementation
+
+Changes:
+	- v1.0.0:
+		- created
+
+Doc reviewed 20161223
+Tests to do...
+
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+(function() {
+	
+	'use strict';
+
+	
+	/* 
+	--- Utilities object --------------------------------------------------------------------------------------
+	
+	Various helper methods
+	
+	Patterns : Closure
+	
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+
+	/*
+	--- getUtilities function ----------------------------------------------------------------------------------------------
+	
+	This function returns the one and only one Utilities object
+
+	------------------------------------------------------------------------------------------------------------------------
+	*/
+	
+	var getUtilities = function ( ) {
+		
+		/*
+		--- getUUID function --------------------------------------------------------------------------------------------------
+		
+		This function returns an unique identifier like UUID
+		Adapted from stackoverflow.com :-)
+
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		var getUUID = function ( ) {
+			function Random4 ( ) {
+				return Math.floor ( ( 1 + Math.random ( ) ) * 0x10000 ).toString ( 16 ).substring ( 1 );
+			}
+			return Random4 ( ) + Random4 ( ) + '-' + Random4 ( ) + '-' + Random4 ( ) + '-' +Random4 ( ) + '-' + Random4 ( ) + Random4 ( ) + Random4 ( ) ;
+		};
+
+		/* --- End of getUUID function --- */
+		
+		var _pageId = getUUID ( ); // The one and omly one PageId. This is used to communicate with the pin's page through the storage.
+		
+		return {
+			
+			/*
+			--- UUID getter --------------------------------------------------------------------------------------------------------
+			*/
+
+			get UUID ( ) { return getUUID ( ); },
+			
+			/*
+			--- pageId getter ------------------------------------------------------------------------------------------------------
+			*/
+
+			get pageId ( ) { return _pageId; },
+			
+			/* 
+			--- storageAvailable function ------------------------------------------------------------------------------------------
+			
+			This function test if the storage API is available ( the API can be deactived by user....)
+			Adapted from MDN :-)
+
+			------------------------------------------------------------------------------------------------------------------------
+			*/
+			
+			storageAvailable: function ( type ) {
+				try {
+					var storage = window [ type ];
+					var	x = '__storage_test__';
+					storage.setItem ( x, x );
+					storage.removeItem ( x );
+					return true;
+				}
+				catch ( e ) {
+					return false;
+				}				
+			},
+			/* --- End of storageAvailable function --- */		
+
+			fileAPIAvailable : function ( ) {
+				try {
+					// FF...
+					var testFileData = new File ( [ 'testdata' ], { type: 'text/plain' } );
+					return true;
+				}
+				catch ( Error ) {
+					if (window.navigator.msSaveOrOpenBlob ) {
+					//edge IE 11...
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+			},
+			
+			
+			saveFile : function ( filename, text, type ) {
+				if ( ! type ) {
+					type = 'text/plain';
+				}
+				if ( window.navigator.msSaveOrOpenBlob ) {
+					//https://msdn.microsoft.com/en-us/library/hh779016(v=vs.85).aspx
+					//edge IE 11...
+					try {
+						window.navigator.msSaveOrOpenBlob ( new Blob ( [ text ] ), filename ); 
+					}
+					catch ( Error ) {
+					}
+				}
+				else {
+					// FF...
+					// http://stackoverflow.com/questions/3665115/create-a-file-in-memory-for-user-to-download-not-through-server
+					try {
+						var mapFile = window.URL.createObjectURL ( new File ( [ text ], { type: type } ) );
+						var element = document.createElement ( 'a' );
+						element.setAttribute( 'href', mapFile );
+						element.setAttribute( 'download', filename );
+						element.style.display = 'none';
+						document.body.appendChild ( element );
+						element.click ( );
+						document.body.removeChild ( element );
+						window.URL.revokeObjectURL ( mapFile );
+					}
+					catch ( Error ) {
+					}				
+				}
+			}
+			
+		};		
+	};
+
+	/* --- End of getUtilities function --- */
+	
+	/* 
+	--- Exports ------------------------------------------------------------------------------------------------------------
+	*/
+			
+	if ( typeof module !== 'undefined' && module.exports ) {
+		module.exports = getUtilities ( );
+	}
+
+} ) ( );
+
+/* --- End of Utilities.js file --- */
+},{}]},{},[17]);

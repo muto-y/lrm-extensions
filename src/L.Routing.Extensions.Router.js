@@ -78,7 +78,7 @@ Tests to do...
 					'Please note that it is **NOT SUITABLE FOR PRODUCTION USE**.\n' +
 					'Refer to the demo server\'s usage policy: ' +
 					'https://github.com/Project-OSRM/osrm-backend/wiki/Api-usage-policy\n\n' +
-					'To change, set the serviceUrl option.\n\n' +
+					'To change, set the serviceUrl option or add at least a Mapbox, Mapzen or GraphHopper API key.\n\n' +
 					'Please do not report issues with this server to neither ' +
 					'Leaflet Routing Machine or OSRM or lrm-extensions - it\'s for\n' +
 					'demo only, and will sometimes not be available, or work in ' +

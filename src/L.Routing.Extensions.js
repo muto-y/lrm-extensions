@@ -367,10 +367,29 @@ Tests to do...
 			}
 			
 			// the GPX button is created
-			var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
-			gpxAnchor.id = 'downloadGpx';
-			gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
-			gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+			//var gpxAnchor = L.DomUtil.create ( 'a', 'lrm-extensions-ServicesAnchor', this._servicesButtonsDiv );
+			//gpxAnchor.id = 'downloadGpx';
+			//gpxAnchor.setAttribute ( 'download', 'lrm-extensions.gpx' ); 
+			//gpxAnchor.innerHTML = '<span id="lrm-extensions-GpxButton" class="lrm-extensions-ServicesButton"></span>';
+
+			var GpxButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
+			GpxButton.id = 'lrm-extensions-GpxButton';
+			L.DomEvent. on (
+				GpxButton,
+				'click',
+				function ( event ) {
+					if ( ! this._gpxRoute ) {
+						return;
+					}
+					var utilities;
+					if ( typeof module !== 'undefined' && module.exports ) {
+						utilities = require ('./utilities' );
+					}
+					utilities.saveFile ( 'lrm-extensions.gpx', this.getGpxString ( ), 'application/xml' );
+				},
+				this
+			);
+				
 
 			// the polyline button is created
 			var routeToLineButton = L.DomUtil.create ( 'span', 'lrm-extensions-ServicesButton', this._servicesButtonsDiv );
@@ -622,8 +641,6 @@ Tests to do...
 			L.Routing.Control.prototype._updateLines.call ( this, routes );
 			// route is saved for the GPX and polyline
 			this._gpxRoute = routes.route;
-			// GPX file
-			this._prepareGpxLink ( );
 			this.fire ( 'gpxchanged' );
 		},
 		
@@ -639,34 +656,6 @@ Tests to do...
 				distance += this._gpxRoute.instructions [ instrCounter ].distance;
 			}
 			return null;
-		},
-		/*
-		--- _prepareGpxLink method ---------------------------------------------------------------------------------------------
-		This method set the GPX data in the GPX button
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_prepareGpxLink : function ( ) {
-			// gpx file is prepared
-			// try... catch is needed because some browsers don't implement window.URL.createObjectURL correctly :-( 
-			var gpxFile = null;
-
-			try {
-				var gpxData = new File ( [ this.getGpxString ( ) ], { type: 'application/xml' } );
-				if ( gpxFile !== null ) {
-					window.URL.revokeObjectURL ( gpxFile );
-				}
-				gpxFile = window.URL.createObjectURL ( gpxData );
-			}
-			catch ( Error ) {
-			}
-			
-			if ( gpxFile ) {
-				document.getElementById( 'downloadGpx').href = gpxFile;
-			}
-			else {
-				document.getElementById( 'downloadGpx' ).style.visibility = 'hidden';
-			}
 		},
 		
 		/*
