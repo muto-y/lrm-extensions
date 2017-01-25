@@ -8,11 +8,11 @@ lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you ca
 - export the route to a GPX file
 - transform the route into a leaflet polyline
 
-see the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
+See the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
 
 ## Before starting using lrm-extensions
 
-To access the routing engines, you need an API key ( also named access token). Visit [Mapbox] (https://www.mapbox.com/studio/signup/?plan=starter),
+To access the routing engines, you need API keys ( also named access tokens). Visit [Mapbox] (https://www.mapbox.com/studio/signup/?plan=starter),
 [Mapzen] (https://mapzen.com/developers/sign_in) and/or [GraphHopper] (https://graphhopper.com/dashboard/#/register) to obtain an API key.
 
 Notice also that when you don't have any API key, lrm-extensions uses OSRM as routing engine. Remember that OSRM is only usable for demo and not for production. 
