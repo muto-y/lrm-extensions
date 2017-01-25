@@ -216,6 +216,10 @@ a#downloadGpx:hover
 {
 	background-image : url('lrm-extensions.img/control/polyline.png');
 }
+#lrm-extensions-EraseButton
+{
+	background-image : url('lrm-extensions.img/control/erase.png');
+}
 .leaflet-routing-icon {
     -webkit-background-size: 20px 20px !important;
     background-size: 20px 20px !important;
@@ -250,7 +254,7 @@ a#downloadGpx:hover
 }
 .leaflet-routing-icon-kDestinationRight 
 { 
-	background-image : url('lrm-extensions.img/control/lrm-mapzen-icons.png');
+	background-image : url('lrm-extensions.img/control/kDestinationRight.png');
 }
 .leaflet-routing-icon-kDestinationLeft 
 { 
@@ -298,7 +302,7 @@ a#downloadGpx:hover
 }
 .leaflet-routing-icon-kRampStraight 
 { 
-	background-image : url('lrm-extensions.img/control/kRampStraight .png');
+	background-image : url('lrm-extensions.img/control/kRampStraight.png');
 }
 .leaflet-routing-icon-kRampRight 
 { 
