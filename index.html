@@ -44,7 +44,12 @@
 				<p>Mapbox access token:</p><p><input id="mapboxKey" type="text"></input></p>
 				<p><input id="saveKeys" type="button" value="Save access tokens and reload page"></input></p>
 			</form>
-			<p>Visit <a href="https://graphhopper.com/dashboard/#/register" target="_blank">GraphHopper</a>, <a href="https://mapzen.com/developers/sign_in" target="_blank">Mapzen</a> and/or <a href="https://www.mapbox.com/studio/signup/?plan=starter" target="_blank">Mapbox</a>, to obtain an access token.
+			<p>Visit <a href="https://graphhopper.com/dashboard/#/register" target="_blank">GraphHopper</a>, <a href="https://mapzen.com/developers/sign_in" target="_blank">Mapzen</a> and/or <a href="https://www.mapbox.com/studio/signup/?plan=starter" target="_blank">Mapbox</a>, to obtain an access token.</p>
+			<div id='RouteDescription'>
+				<p>Right click on an instruction in the control to see the distance from the start point:</p>
+				<p id='Distance'>Distance: 0 km<p>
+				<div id="Route"></div>
+			</div>
 		</div>
 		<script src="leaflet.js"></script>
 		<script src="leaflet-routing-machine.min.js"></script>
@@ -105,7 +110,24 @@
 					dragStyles : [{color: 'black', opacity: 0.15, weight: 7}, {color: 'white', opacity: 0.8, weight: 6}, {color: 'green', opacity: 1, weight: 2, dashArray: '7,12'}],
 				} ).addTo( Map );
 				L.Routing.errorControl( Routing ).addTo( Map );
-				
+				L.DomEvent.on ( 
+					Routing , 
+					'gpxchanged', 
+					function ( event ) {
+						document.getElementById ( 'RouteDescription' ).replaceChild ( Routing.getRouteHTMLElement ( ), document.getElementById ( 'Route' ) );
+					}
+				);
+				L.DomEvent.on ( 
+					Routing , 
+					'instructioncontextmenu', 
+					function ( event ) {
+						console.log ( event )
+						var instr = Routing.getInstructionAtLatLng ( event );
+						if ( instr ) { 
+							document.getElementById ( 'Distance' ).innerHTML = 'Distance: ' + instr.distance.toFixed ( 3 ) + ' km';
+						}
+					}
+				);
 				var saveKeys = function ( event ) {
 					if ( ! storageAvailable ( ) )
 					{

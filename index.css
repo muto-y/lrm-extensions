@@ -52,12 +52,13 @@ html > body > div#Text
 	background-color : black;
 	position: absolute;	
 	width: auto; 
-	height: auto; 
+	height: 95%; 
 	top: 0px; 
 	right: 0px; 
 	bottom: 0px; 
 	left: 70%;
 	padding: 1em;
+	overflow: scroll;
 }
 html > body > div#Text > form#options
 {
