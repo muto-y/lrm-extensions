@@ -2474,7 +2474,7 @@ Tests to do...
 					options.name = nameInput.value;
 					options.clear = clearInput.checked;
 					map.closePopup ( );
-					routingMachine.RouteToLine ( options );
+					routingMachine.routeToLine ( options );
 				} 
 			);
 		} 
