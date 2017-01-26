@@ -22,7 +22,7 @@ This file contains:
 
 Changes:
 	- v1.0.0:
-		- created
+		- created 
 
 Doc reviewed 20161223
 Tests to do...

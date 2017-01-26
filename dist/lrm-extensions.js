@@ -2393,6 +2393,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -2586,6 +2587,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -2821,6 +2823,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -3124,6 +3127,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 (function() {
@@ -3352,6 +3356,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -3664,6 +3669,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -3807,6 +3813,7 @@ Changes:
 		
 Doc not reviewed...
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -4270,6 +4277,7 @@ Changes:
 		- created
 Doc reviewed 20161022
 Tests to do...
+
 ------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -4293,17 +4301,19 @@ Tests to do...
 		_gpxRoute : null,
 
 		/*
-		--- transitMode getter -------------------------------------------------------------------------------------------------
+		--- _routingButtonsDiv : Variable used to store the provider and transit mode buttons DIV ------------------------------
+		------------------------------------------------------------------------------------------------------------------------
 		*/
-		
-		getTransitMode : function ( ) { return this.options.transitMode; },
+
+		_routingButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' ),
 
 		/*
-		--- provider getter ----------------------------------------------------------------------------------------------------
+		--- _servicesButtonsDiv : Variable used to store the GPX and Polyline buttons DIV --------------------------------------
+		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		getProvider : function ( ) { return this.options.provider; },
-		
+		_servicesButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' ),
+
 		/*
 		--- initialize method --------------------------------------------------------------------------------------------------
 		Constructor
@@ -4407,41 +4417,20 @@ Tests to do...
 		},
 		
 		/*
-		--- _createRadioButton method ------------------------------------------------------------------------------------------
-		Helper method for the button creation
-		See also the lrm-extensions.css file. Radio buttons are used for chanching the image when the button is clicked
+		--- _addRowListeners ---------------------------------------------------------------------------------------------------
+		Overload of the _addRowListeners method
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
-			var radioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
-			radioButton.type = 'radio';
-			radioButton.setAttribute ( 'title' , titleAttribute );
-			radioButton.setAttribute ( 'name' , nameAttribute );
-			radioButton.id = ButtonId;
-
-			var radioLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', parentHTML );
-			radioLabel.setAttribute ( 'title' , titleAttribute );
-			radioLabel.setAttribute ( 'for' , ButtonId );
-			radioLabel.id = LabelId;
-			
-			return radioButton;
+		_addRowListeners: function ( row, coordinate ) {
+			L.Routing.Control.prototype._addRowListeners.call ( this, row, coordinate );
+			L.DomEvent.addListener ( row, 'contextmenu', function ( e ) {
+				e.preventDefault ( );
+				e.stopPropagation ( );
+				this.fire ( 'instructioncontextmenu', coordinate );
+			}, this);
 		},
 		
-		/*
-		--- _routingButtonsDiv : Variable used to store the provider and transit mode buttons DIV ------------------------------
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_routingButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-RoutingButtons' ),
-
-		/*
-		--- _servicesButtonsDiv : Variable used to store the GPX and Polyline buttons DIV --------------------------------------
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_servicesButtonsDiv : L.DomUtil.create ( 'form', 'lrm-extensions-ServiceButtons' ),
-
 		/*
 		--- onAdd method -------------------------------------------------------------------------------------------------------
 		overload of the onAdd method
@@ -4652,13 +4641,13 @@ Tests to do...
 			L.DomEvent.on (
 				eraseButton,
 				'click',
-				L.bind (
-					function ( event )
-					{
-						this.setWaypoints ( [] );
-					},
-					this
-				)
+				function ( event )
+				{
+					this._gpxRoute = null;
+					this.fire ( 'gpxchanged' );
+					this.setWaypoints ( [] );
+				},
+				this
 			);
 
 			// buttons are added to the control
@@ -4669,6 +4658,65 @@ Tests to do...
 			this._routePolylines.addTo ( map );
 			
 			return container;
+		},
+		
+		/*
+		--- show method --------------------------------------------------------------------------------------------------------
+		overload of the show method
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
+		show : function ( ) {
+			L.Routing.Control.prototype.show.call ( this );
+			this._routingButtonsDiv.setAttribute ( "style" , "display: block" );
+			this._servicesButtonsDiv.setAttribute ( "style" , "display: block" );
+		},
+		
+		/*
+		--- hide method --------------------------------------------------------------------------------------------------------
+		overload of the hide method
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
+		hide : function ( ) {
+			L.Routing.Control.prototype.hide.call ( this );
+			this._routingButtonsDiv.setAttribute ( "style" , "display: none" );
+			this._servicesButtonsDiv.setAttribute ( "style" , "display: none" );
+		},
+
+		/*
+		--- _updateLines method ------------------------------------------------------------------------------------------------
+		overload of the _updateLines method
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_updateLines: function ( routes ) {
+			L.Routing.Control.prototype._updateLines.call ( this, routes );
+			// route is saved for the GPX and polyline
+			this._gpxRoute = routes.route;
+			this.fire ( 'gpxchanged' );
+		},
+		
+		/*
+		--- _createRadioButton method ------------------------------------------------------------------------------------------
+		Helper method for the button creation
+		See also the lrm-extensions.css file. Radio buttons are used for chanching the image when the button is clicked
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		_createRadioButton: function ( parentHTML, titleAttribute, nameAttribute, ButtonId, LabelId ) {
+			var radioButton = L.DomUtil.create ( 'input', 'lrm-extensions-Button', parentHTML );
+			radioButton.type = 'radio';
+			radioButton.setAttribute ( 'title' , titleAttribute );
+			radioButton.setAttribute ( 'name' , nameAttribute );
+			radioButton.id = ButtonId;
+
+			var radioLabel = L.DomUtil.create ( 'label', 'lrm-extensions-Label', parentHTML );
+			radioLabel.setAttribute ( 'title' , titleAttribute );
+			radioLabel.setAttribute ( 'for' , ButtonId );
+			radioLabel.id = LabelId;
+			
+			return radioButton;
 		},
 		
 		/*
@@ -4725,6 +4773,59 @@ Tests to do...
 			}
 		},
 
+		/*
+		--- addPolyline method -------------------------------------------------------------------------------------------------
+		This method add a polyline to the map and to the layergroup
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+
+		addPolyline : function ( pnts, options, name ) {
+			var polyline = L.polyline ( pnts, options );	
+			if ( 0 < name.length ) {
+				polyline.bindTooltip ( name );
+			}
+			polyline.LrmExtensionsName = name;
+			
+			var PolylineMenu;
+			if ( typeof module !== 'undefined' && module.exports ) {
+				PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
+			}
+
+			L.DomEvent.on ( 
+				polyline,
+				'click',
+				L.bind (
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, this );
+					},
+					this
+				)
+			);
+			L.DomEvent.on ( 
+				polyline,
+				'contextmenu',
+				L.bind (
+					function ( MouseEvent ) {
+						PolylineMenu ( MouseEvent, this._map, this );
+					},
+					this
+				)
+			);
+			
+			this._routePolylines.addLayer ( polyline );
+		
+		},
+		
+		/*
+		--- getRoutePolylines method -------------------------------------------------------------------------------------------------
+		Simple get method...
+		------------------------------------------------------------------------------------------------------------------------
+		*/
+		
+		getRoutePolylines : function ( ) {
+			return this._routePolylines;
+		},
+		
 		/*
 		--- getPointAndDistance method -----------------------------------------------------------------------------------------
 		This method return the nearest point on the route and the distance from the beginning of the route to this point
@@ -4792,95 +4893,11 @@ Tests to do...
 		},
 		
 		/*
-		--- addPolyline method -------------------------------------------------------------------------------------------------
-		This method add a polyline to the map and to the layergroup
+		--- getInstructionAtLatLng method --------------------------------------------------------------------------------------
+		This method returns the icon name and distance from the beginning of the route for a given LatLng
 		------------------------------------------------------------------------------------------------------------------------
 		*/
 
-		addPolyline : function ( pnts, options, name ) {
-			var polyline = L.polyline ( pnts, options );	
-			if ( 0 < name.length ) {
-				polyline.bindTooltip ( name );
-			}
-			polyline.LrmExtensionsName = name;
-			
-			var PolylineMenu;
-			if ( typeof module !== 'undefined' && module.exports ) {
-				PolylineMenu = require ('./L.Routing.Extensions.PolylineMenu' );
-			}
-
-			L.DomEvent.on ( 
-				polyline,
-				'click',
-				L.bind (
-					function ( MouseEvent ) {
-						PolylineMenu ( MouseEvent, this._map, this );
-					},
-					this
-				)
-			);
-			L.DomEvent.on ( 
-				polyline,
-				'contextmenu',
-				L.bind (
-					function ( MouseEvent ) {
-						PolylineMenu ( MouseEvent, this._map, this );
-					},
-					this
-				)
-			);
-			
-			this._routePolylines.addLayer ( polyline );
-		
-		},
-		
-		/*
-		--- getRoutePolylines method -------------------------------------------------------------------------------------------------
-		Simple get method...
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-		
-		getRoutePolylines : function ( ) {
-			return this._routePolylines;
-		},
-		
-		/*
-		--- show method --------------------------------------------------------------------------------------------------------
-		overload of the show method
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-		
-		show : function ( ) {
-			L.Routing.Control.prototype.show.call ( this );
-			this._routingButtonsDiv.setAttribute ( "style" , "display: block" );
-			this._servicesButtonsDiv.setAttribute ( "style" , "display: block" );
-		},
-		
-		/*
-		--- hide method --------------------------------------------------------------------------------------------------------
-		overload of the hide method
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-		
-		hide : function ( ) {
-			L.Routing.Control.prototype.hide.call ( this );
-			this._routingButtonsDiv.setAttribute ( "style" , "display: none" );
-			this._servicesButtonsDiv.setAttribute ( "style" , "display: none" );
-		},
-
-		/*
-		--- _updateLines method ------------------------------------------------------------------------------------------------
-		overload of the _updateLines method
-		------------------------------------------------------------------------------------------------------------------------
-		*/
-
-		_updateLines: function ( routes ) {
-			L.Routing.Control.prototype._updateLines.call ( this, routes );
-			// route is saved for the GPX and polyline
-			this._gpxRoute = routes.route;
-			this.fire ( 'gpxchanged' );
-		},
-		
 		getInstructionAtLatLng : function ( latLng ) {
 			var distance = 0;
 			for ( var instrCounter = 0; instrCounter < this._gpxRoute.instructions.length; instrCounter ++ ) {
@@ -5222,14 +5239,19 @@ Tests to do...
 			}
 			return routeElement;
 		},
-		_addRowListeners: function ( row, coordinate ) {
-			L.Routing.Control.prototype._addRowListeners.call ( this, row, coordinate );
-			L.DomEvent.addListener ( row, 'contextmenu', function ( e ) {
-				e.preventDefault ( );
-				e.stopPropagation ( );
-				this.fire ( 'instructioncontextmenu', coordinate );
-			}, this);
-		}
+		
+		/*
+		--- transitMode getter -------------------------------------------------------------------------------------------------
+		*/
+		
+		getTransitMode : function ( ) { return this.options.transitMode; },
+
+		/*
+		--- provider getter ----------------------------------------------------------------------------------------------------
+		*/
+
+		getProvider : function ( ) { return this.options.provider; }
+		
 	});
 	
 	/*
@@ -5277,7 +5299,7 @@ This file contains:
 
 Changes:
 	- v1.0.0:
-		- created
+		- created 
 
 Doc reviewed 20161223
 Tests to do...
