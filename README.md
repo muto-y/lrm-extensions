@@ -1,7 +1,5 @@
 # lrm-extensions
 
-Warning : this plugin is under development. Unstable version!
-
 lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can:
 - switch between Mapbox, Mapzen or Graphhopper as routing engine, using buttons in the control
 - switch between car, bike or pedestrian, using buttons in the control
