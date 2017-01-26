@@ -1,3 +1,4 @@
+<a id='lrm-exetension-help'>
 # lrm-extensions
 
 lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you can:
@@ -5,6 +6,7 @@ lrm-extensions is a plugin for leaflet-routing-machine. With this plugin, you ca
 - switch between car, bike or pedestrian, using buttons in the control
 - export the route to a GPX file
 - transform the route into a leaflet polyline
+- takes actions on a right click on an instruction in Leaflet Routing Machine control with the 'instructioncontextmenu' event 
 
 See the [demo](http://wwwouaiebe.github.io/lrm-extensions/) page.
 
@@ -28,7 +30,13 @@ Click on the 'polyline' button <img src="lrm-extensions.img/control/polyline.png
 
 Click on the 'clean all waypoints' button <img src="lrm-extensions.img/control/erase.png" /> to completely remove the route
 
-### Editing polylines
+## Editing polylines
 
 When a polyline is added to the map, you can change the color, the width or the name with a right click on the polyline and then select edit in the menu. You can also remove the polyline with the delete button in the menu.
 When a name is added in a polyline, the name is visible in a tooltip.
+
+## Events
+
+Look the route description on the right. The route description changes each time the route is modified ( drag or add a waypoint, change the provider or the transit mode ). This is performed with the 'gpxchanged' event.
+
+Right click on a route instruction in the Leaflet Routing Machine. The distance on the right is adapted. This is performed with the 'instructioncontextmenu' event and the getInstructionAtLatLng ( ) method.
